@@ -1,35 +1,23 @@
-Sub ClearNonPrintArea()
+Sub ClearContentsOfHiddenRowsSpecificRange()
     Dim ws As Worksheet
-    Dim printAreaRange As Range
-    Dim targetRange As Range
-    Dim nonPrintRange As Range
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim row As Long
 
-    ' Set the worksheet where you want to clear non-print area content
-    Set ws = ThisWorkbook.Sheets("Sheet1") ' Adjust to your worksheet name
+    ' Set the worksheet where you want to clear hidden row contents
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Adjust to your specific worksheet name
 
-    ' Define the specific range that contains your data (e.g., A1:D100)
-    Set targetRange = ws.Range("A1:D100") ' Adjust according to your data range
+    ' Define the range of rows you want to inspect (e.g., rows 1 to 100)
+    startRow = 1
+    endRow = 100
 
-    ' Ensure the print area is set and fetch the print area range
-    If ws.PageSetup.PrintArea <> "" Then
-        Set printAreaRange = ws.Range(ws.PageSetup.PrintArea)
-    Else
-        MsgBox "No print area set in the specified worksheet."
-        Exit Sub
-    End If
+    ' Loop through the specified range and clear contents of hidden rows
+    For row = startRow To endRow
+        ' Check if the entire row is hidden
+        If ws.Rows(row).Hidden Then
+            ws.Rows(row).ClearContents
+        End If
+    Next row
 
-    ' Identify cells outside the print area by subtracting the print area from the target range
-    On Error Resume Next ' Prevents errors if no cells are found
-    Set nonPrintRange = targetRange.SpecialCells(xlCellTypeConstants + xlCellTypeFormulas)
-    If Not nonPrintRange Is Nothing Then
-        ' Create a range excluding the print area
-        Set nonPrintRange = Application.Intersect(targetRange, nonPrintRange)
-        Set nonPrintRange = Application.Subtract(nonPrintRange, printAreaRange)
-
-        ' Clear all cells outside the print area within the target range
-        nonPrintRange.Clear
-    End If
-    On Error GoTo 0 ' Restore error handling
-
-    MsgBox "All cells outside the print area within the target range have been cleared."
+    MsgBox "Contents of all hidden rows in the specified range have been cleared."
 End Sub
