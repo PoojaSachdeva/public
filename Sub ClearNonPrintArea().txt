@@ -1,0 +1,26 @@
+Sub ClearNonPrintArea()
+    Dim ws As Worksheet
+    Dim printAreaRange As Range
+    Dim cell As Range
+    
+    ' Set the worksheet where you want to clear non-print area content
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to the correct worksheet name
+    
+    ' Check if the print area is set and fetch the print area range
+    If ws.PageSetup.PrintArea <> "" Then
+        Set printAreaRange = ws.Range(ws.PageSetup.PrintArea)
+    Else
+        MsgBox "No print area set in the specified worksheet."
+        Exit Sub
+    End If
+
+    ' Loop through all cells in the worksheet
+    For Each cell In ws.UsedRange
+        ' If the cell is not in the print area, clear its contents and formatting
+        If Intersect(cell, printAreaRange) Is Nothing Then
+            cell.Clear
+        End If
+    Next cell
+    
+    MsgBox "All cells outside the print area have been cleared."
+End Sub
