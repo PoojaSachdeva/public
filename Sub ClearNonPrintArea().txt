@@ -36,3 +36,20 @@ ub RemoveAllDataValidationEfficiently()
 
     MsgBox "All data validation rules have been removed from the entire workbook."
 End Sub
+
+
+Sub DeleteAllShapesInWorkbook()
+    Dim ws As Worksheet
+    Dim shp As Shape
+
+    ' Loop through each worksheet in the workbook
+    For Each ws In ThisWorkbook.Worksheets
+        ' Loop backward through each shape in the worksheet
+        For Each shp In ws.Shapes
+            shp.Delete
+        Next shp
+    Next ws
+
+    MsgBox "All shapes have been deleted from all worksheets."
+End Sub
+
