@@ -1,36 +1,8 @@
-Sub ClearNonPrintArea()
-    Dim ws As Worksheet
-    Dim printAreaRange As Range
-    Dim cell As Range
-    
-    ' Set the worksheet where you want to clear non-print area content
-    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to the correct worksheet name
-    
-    ' Check if the print area is set and fetch the print area range
-    If ws.PageSetup.PrintArea <> "" Then
-        Set printAreaRange = ws.Range(ws.PageSetup.PrintArea)
-    Else
-        MsgBox "No print area set in the specified worksheet."
-        Exit Sub
-    End If
-
-    ' Loop through all cells in the worksheet
-    For Each cell In ws.UsedRange
-        ' If the cell is not in the print area, clear its contents and formatting
-        If Intersect(cell, printAreaRange) Is Nothing Then
-            cell.Clear
-        End If
-    Next cell
-    
-    MsgBox "All cells outside the print area have been cleared."
-End Sub
-
-
 Sub ClearNonPrintAreaOptimized()
     Dim ws As Worksheet
     Dim printAreaRange As Range
     Dim targetRange As Range
-    Dim outsideRanges As Range
+    Dim nonPrintRange As Range
 
     ' Set the worksheet where you want to clear non-print area content
     Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to the relevant worksheet name
@@ -47,11 +19,17 @@ Sub ClearNonPrintAreaOptimized()
     End If
 
     ' Determine the range outside the print area by using the difference
-    On Error Resume Next ' Ignore errors when no intersection occurs
-    Set outsideRanges = targetRange.SpecialCells(xlCellTypeConstants) ' Initialize to all constants
-    Set outsideRanges = Union(outsideRanges, targetRange.SpecialCells(xlCellTypeFormulas))
-    Set outsideRanges = outsideRanges.Offset(0, 0) ' Re-set range if non-empty
-    
-    ' Remove print area range from the target range, leaving only non-print area
-    Set outsideRanges = Intersect(outsideRanges, targetRange)
-    Set outsideRanges = outsideRanges.Offset(0, 0).SpecialCells(xlCellTypeConstants)
+    On Error Resume Next ' Prevent errors if no matching cells are found
+    Set nonPrintRange = ws.Range( _
+        Application.Union(targetRange, printAreaRange).Address _
+    ).SpecialCells(xlCellTypeConstants)
+
+    ' Clear all cells that were identified as being outside the print area
+    If Not nonPrintRange Is Nothing Then
+        nonPrintRange.Clear
+    End If
+
+    On Error GoTo 0 ' Restore normal error handling
+
+    MsgBox "All cells outside the print area within the target range have been cleared."
+End Sub
