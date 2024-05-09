@@ -1,16 +1,16 @@
-Sub ClearNonPrintAreaOptimized()
+Sub ClearNonPrintArea()
     Dim ws As Worksheet
     Dim printAreaRange As Range
     Dim targetRange As Range
     Dim nonPrintRange As Range
 
     ' Set the worksheet where you want to clear non-print area content
-    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to the relevant worksheet name
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Adjust to your worksheet name
 
-    ' Define the specific range that contains your data (example A1:D100)
-    Set targetRange = ws.Range("A1:D100") ' Modify this range as per your data range
+    ' Define the specific range that contains your data (e.g., A1:D100)
+    Set targetRange = ws.Range("A1:D100") ' Adjust according to your data range
 
-    ' Check if the print area is set and fetch the print area range
+    ' Ensure the print area is set and fetch the print area range
     If ws.PageSetup.PrintArea <> "" Then
         Set printAreaRange = ws.Range(ws.PageSetup.PrintArea)
     Else
@@ -18,18 +18,18 @@ Sub ClearNonPrintAreaOptimized()
         Exit Sub
     End If
 
-    ' Determine the range outside the print area by using the difference
-    On Error Resume Next ' Prevent errors if no matching cells are found
-    Set nonPrintRange = ws.Range( _
-        Application.Union(targetRange, printAreaRange).Address _
-    ).SpecialCells(xlCellTypeConstants)
-
-    ' Clear all cells that were identified as being outside the print area
+    ' Identify cells outside the print area by subtracting the print area from the target range
+    On Error Resume Next ' Prevents errors if no cells are found
+    Set nonPrintRange = targetRange.SpecialCells(xlCellTypeConstants + xlCellTypeFormulas)
     If Not nonPrintRange Is Nothing Then
+        ' Create a range excluding the print area
+        Set nonPrintRange = Application.Intersect(targetRange, nonPrintRange)
+        Set nonPrintRange = Application.Subtract(nonPrintRange, printAreaRange)
+
+        ' Clear all cells outside the print area within the target range
         nonPrintRange.Clear
     End If
-
-    On Error GoTo 0 ' Restore normal error handling
+    On Error GoTo 0 ' Restore error handling
 
     MsgBox "All cells outside the print area within the target range have been cleared."
 End Sub
