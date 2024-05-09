@@ -24,3 +24,34 @@ Sub ClearNonPrintArea()
     
     MsgBox "All cells outside the print area have been cleared."
 End Sub
+
+
+Sub ClearNonPrintAreaOptimized()
+    Dim ws As Worksheet
+    Dim printAreaRange As Range
+    Dim targetRange As Range
+    Dim outsideRanges As Range
+
+    ' Set the worksheet where you want to clear non-print area content
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to the relevant worksheet name
+
+    ' Define the specific range that contains your data (example A1:D100)
+    Set targetRange = ws.Range("A1:D100") ' Modify this range as per your data range
+
+    ' Check if the print area is set and fetch the print area range
+    If ws.PageSetup.PrintArea <> "" Then
+        Set printAreaRange = ws.Range(ws.PageSetup.PrintArea)
+    Else
+        MsgBox "No print area set in the specified worksheet."
+        Exit Sub
+    End If
+
+    ' Determine the range outside the print area by using the difference
+    On Error Resume Next ' Ignore errors when no intersection occurs
+    Set outsideRanges = targetRange.SpecialCells(xlCellTypeConstants) ' Initialize to all constants
+    Set outsideRanges = Union(outsideRanges, targetRange.SpecialCells(xlCellTypeFormulas))
+    Set outsideRanges = outsideRanges.Offset(0, 0) ' Re-set range if non-empty
+    
+    ' Remove print area range from the target range, leaving only non-print area
+    Set outsideRanges = Intersect(outsideRanges, targetRange)
+    Set outsideRanges = outsideRanges.Offset(0, 0).SpecialCells(xlCellTypeConstants)
