@@ -21,3 +21,18 @@ Sub ClearContentsOfHiddenRowsSpecificRange()
 
     MsgBox "Contents of all hidden rows in the specified range have been cleared."
 End Sub
+
+
+ub RemoveAllDataValidationEfficiently()
+    Dim ws As Worksheet
+
+    ' Loop through each worksheet in the workbook
+    For Each ws In ThisWorkbook.Worksheets
+        ' Clear data validation for the entire used range of the worksheet
+        On Error Resume Next
+        ws.UsedRange.Validation.Delete
+        On Error GoTo 0
+    Next ws
+
+    MsgBox "All data validation rules have been removed from the entire workbook."
+End Sub
