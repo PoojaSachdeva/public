@@ -1,0 +1,44 @@
+import pdfplumber
+from openpyxl import Workbook
+import re  # Importing the regular expression module
+
+def extract_qa_to_excel_with_headers(pdf_path, excel_path):
+    """
+    Extracts questions and answers from a PDF and writes them to an Excel file, including the PDF name and first line as headers.
+    """
+    filename = pdf_path.split('/')[-1]
+
+    with pdfplumber.open(pdf_path) as pdf:
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.append(["File Name", "Header", "Question", "Answer"])
+
+        first_page = pdf.pages[0]
+        first_line = first_page.extract_text().split('\n')[0]
+
+        full_text = ''
+        for page in pdf.pages:
+            full_text += page.extract_text() + '\n'
+
+        # Regular expression to capture variations in "Objection" labeling
+        objection_pattern = re.compile(r'Objection\s*\d+\s*[:;]?', re.IGNORECASE)
+        # Regular expression to capture variations in "Response" labeling
+        response_pattern = re.compile(r'Response\s*\d+\s*:', re.IGNORECASE)
+
+        # Split the text into sections based on 'Objection' patterns
+        sections = re.split(objection_pattern, full_text)
+        for section in sections:
+            match = response_pattern.search(section)
+            if match:
+                question = section[:match.start()].strip()
+                answer = section[match.end():].strip()
+                sheet.append([filename, first_line, question, answer])
+
+        workbook.save(excel_path)
+
+# File paths for the original PDF and output Excel file
+original_pdf_path = (r"D:\Scholarship\Objection database code\LA GL SERF 1234_v9.pdf")
+excel_path = (r"D:\Scholarship\Objection database code\test9.xlsx")
+
+# Extract questions and answers to Excel with headers
+extract_qa_to_excel_with_headers(original_pdf_path, excel_path)
