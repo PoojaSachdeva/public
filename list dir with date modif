@@ -1,0 +1,69 @@
+import os
+from datetime import datetime
+import pandas as pd
+
+def get_last_modified_date(file_path: str) -> str:
+    """
+    Get the last modified date of a file in MM/DD/YYYY format.
+
+    Args:
+        file_path (str): The path to the file for which to get the last modified date.
+
+    Returns:
+        str: The last modified date in MM/DD/YYYY format.
+    """
+    try:
+        last_modified_timestamp = os.path.getmtime(file_path)
+        last_modified_date = datetime.fromtimestamp(last_modified_timestamp).strftime("%m/%d/%Y")
+        return last_modified_date
+    except Exception as e:
+        return "N/A"  # Return "N/A" if the last modified date cannot be retrieved
+
+def list_files_in_directory(directory: str) -> pd.DataFrame:
+    """
+    List all files in a directory with their last modified date if they are Word or PDF files.
+
+    Args:
+        directory (str): The directory to scan for files.
+
+    Returns:
+        pd.DataFrame: A DataFrame with the file names and their last modified dates.
+    """
+    files_data = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            extension = os.path.splitext(file)[-1].lower()
+            if extension in ['.doc', '.docx', '.pdf']:
+                last_modified = get_last_modified_date(file_path)
+                files_data.append({"File Name": file, "Last Modified": last_modified})
+            else:
+                files_data.append({"File Name": file, "Last Modified": "N/A"})
+
+    df = pd.DataFrame(files_data)
+    return df
+
+def export_to_excel(df: pd.DataFrame, output_path: str):
+    """
+    Export a DataFrame to an Excel file.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to export.
+        output_path (str): The file path to save the Excel file.
+    """
+    df.to_excel(output_path, index=False)
+
+# Example usage
+if __name__ == "__main__":
+    # Specify the directory to scan
+    directory_path = r"C:\Users\Username\Documents"
+
+    # Call the function to list files
+    files_df = list_files_in_directory(directory_path)
+
+    # Specify the output path for the Excel file
+    excel_output_path = r"C:\Users\Username\Documents\file_list.xlsx"
+
+    # Export the DataFrame to an Excel file
+    export_to_excel(files_df, excel_output_path)
+    print("The file list has been exported to Excel.")
