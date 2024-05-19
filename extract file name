@@ -1,0 +1,21 @@
+import pandas as pd
+import os
+
+# Load the data from an Excel file
+input_filename = "path_to_your_excel_file.xlsx"
+df = pd.read_excel(input_filename)
+
+
+# Extract filenames and extensions from the full paths in column 'File'
+df['Filename'] = df['File'].apply(lambda x: os.path.splitext(os.path.basename(x))[0])
+df['File Extension'] = df['File'].apply(lambda x: os.path.splitext(os.path.basename(x))[1])
+
+# Check to ensure the DataFrame looks as expected
+print(df.head())
+
+# Save the results back to an Excel file
+output_filename = "processed_data_with_filenames.xlsx"
+# Include only the columns 'File', 'Filename', 'Date Modified'
+df.to_excel(output_filename, columns=['File', 'Filename', 'Date Modified'], index=False)
+
+print(f"Data processed and saved to {output_filename}.")
