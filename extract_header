@@ -1,0 +1,66 @@
+import pandas as pd
+import re
+
+def process_header(row, states, platforms, lobs, error_messages):
+    """
+    Extracts specific information from a text string in a DataFrame row.
+    
+    Parameters:
+    - row (str): A single string from the DataFrame where data is to be extracted.
+    - states (list): A list of state identifiers to extract.
+    - platforms (list): A list of platform identifiers to extract.
+    - lobs (list): A list of lines of business identifiers to extract.
+    - error_messages (dict): A dictionary of error messages for each missing item.
+    
+    Returns:
+    - pd.Series: A series containing extracted data including state, platform, lob,
+      SERFF number, and objection round or corresponding error messages if not found.
+    """
+    # Split the string into words for easy searching
+    words = row.split()
+    
+    # Extract state by checking each word against the list of states
+    state = next((word for word in words if word in states), error_messages['state_error'])
+    
+    # Extract platform by checking each word against the list of platforms
+    platform = next((word for word in words if word in platforms), error_messages['platform_error'])
+    
+    # Extract line of business by checking each word against the list of lobs
+    lob = next((word for word in words if word in lobs), error_messages['lob_error'])
+    
+    # Use regular expression to find a number that follows the keyword 'Objection'
+    match_number = re.search(r"Objection\s+(\d+)", row)
+    objection_round = match_number.group(1) if match_number else error_messages['objection_error']
+    
+    # Use regular expression to find the SERFF number following the keyword 'SERFF'
+    match_serff = re.search(r"SERFF\s+(\w{15})", row)
+    serff_number = match_serff.group(1) if match_serff else error_messages['serff_error']
+    
+    # Return all extracted items as a pandas Series
+    return pd.Series([state, platform, lob, serff_number, objection_round])
+
+# Load the data from an Excel file
+input_filename = "path_to_your_excel_file.xlsx"
+df = pd.read_excel(input_filename)
+
+# Define lists of valid identifiers and error messages
+states = ["WA", "NY", "CA"]
+platforms = ["E", "C"]
+lobs = ["GL", "AUTO", "PROP"]
+error_messages = {
+    'state_error': 'State not found',
+    'platform_error': 'Platform not found',
+    'lob_error': 'LOB not found',
+    'serff_error': 'SERFF number not found',
+    'objection_error': 'Objection round not found'
+}
+
+# Assuming 'B' is the correct column name for the data to process
+df[['State', 'Platform', 'LOB', 'SERFF Number', 'Objection Round']] = df['B'].apply(
+    lambda row: process_header(row, states, platforms, lobs, error_messages))
+
+# Export the modified DataFrame to an Excel file, including all original and new columns
+output_filename = "extracted_data.xlsx"
+df.to_excel(output_filename, index=False)
+
+print(f"Data extracted and saved to {output_filename}.")
