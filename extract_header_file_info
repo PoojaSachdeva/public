@@ -1,0 +1,85 @@
+import pandas as pd
+import re
+from datetime import datetime
+import os
+
+# Step 1: Read the input file
+input_filename = "path_to_your_excel_file.xlsx"
+df = pd.read_excel(input_filename)
+
+# Step 2: Print all header column names
+print("Header column names:", df.columns.tolist())
+
+# Function to extract generic information based on a list
+def extract_info(row, info_list):
+    return next((word for word in row.split() if word in info_list), 'Not found')
+
+# Function to extract the SERFF number
+def extract_serff_number(row):
+    match = re.search(r"SERFF\s+([\w-]+)", row)
+    return match.group(1) if match else 'Not found'
+
+# Function to extract the date
+def extract_date(row):
+    match = re.search(r'(\d{4} \d{2} \d{2})', row)
+    return match.group(1) if match else 'Not found'
+
+# Function to extract the objection round
+def extract_objection_round(row):
+    match = re.search(r'Objection (\d+)', row)
+    return match.group(1) if match else 'Not found'
+
+# Function to compare attributes from Header and Filename
+def compare_attributes(header_info, filename_info):
+    if header_info == filename_info:
+        return header_info if header_info != 'Not found' else 'Info not found in either'
+    elif header_info != 'Not found' and filename_info != 'Not found':
+        return f'Mismatch error: {header_info} vs {filename_info}'
+    else:
+        return header_info if header_info != 'Not found' else filename_info
+
+# Data processing function to add code run date and compare extracted data
+def process_data(row, states, platforms, lobs):
+    state_header = extract_info(row['Header'], states)
+    state_filename = extract_info(row['Filename'], states)
+    final_state = compare_attributes(state_header, state_filename)
+
+    platform_header = extract_info(row['Header'], platforms)
+    platform_filename = extract_info(row['Filename'], platforms)
+    final_platform = compare_attributes(platform_header, platform_filename)
+
+    return pd.Series({
+        'Run Code Date': datetime.now().strftime('%Y-%m-%d'),
+        'Folder Path': os.path.abspath(input_filename),
+        'Filename': row['Filename'],
+        'State': final_state,
+        'Platform': final_platform,
+        'SERFF/DOI Tracking#': extract_serff_number(row['Header']),
+        'NB/RB Date': '',
+        'Objection Folder Link': os.path.abspath(input_filename),
+        'Objection Date Added': extract_date(row['Filename']),
+        'Actuarial Objection Round': extract_objection_round(row['Filename']),
+        'Actuarial Objection Number': '',
+        'Objection Count': '',
+        'Objection Question': row.get('Objection Question', ''),
+        'Response': row.get('Response', '')
+    })
+
+# Define lists of valid identifiers
+states = ["WA", "NY", "CA"]
+platforms = ["E", "C"]
+lobs = ["GL", "AUTO", "PROP"]
+
+# Apply the data processing function
+df_results = df.apply(lambda row: process_data(row, states, platforms, lobs), axis=1)
+
+# Reorder and prepare the DataFrame for output
+final_columns = ['Run Code Date', 'Folder Path', 'Filename', 'State', 'Platform', 'SERFF/DOI Tracking#',
+                 'NB/RB Date', 'Objection Folder Link', 'Objection Date Added', 'Actuarial Objection Round',
+                 'Actuarial Objection Number', 'Objection Count', 'Objection Question', 'Response']
+df_final = df_results[final_columns]
+
+# Export to Excel
+output_filename = "processed_output.xlsx"
+df_final.to_excel(output_filename, index=False)
+print(f"Data processed and saved to {output_filename}.")
