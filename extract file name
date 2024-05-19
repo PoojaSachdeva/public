@@ -5,17 +5,26 @@ import os
 input_filename = "path_to_your_excel_file.xlsx"
 df = pd.read_excel(input_filename)
 
+# Define a function to extract filename without extension and file extension
+def extract_file_details(path):
+    basename = os.path.basename(path)  # Get the filename with extension
+    filename, extension = os.path.splitext(basename)  # Split the filename and extension
+    return filename, extension
 
-# Extract filenames and extensions from the full paths in column 'File'
-df['Filename'] = df['File'].apply(lambda x: os.path.splitext(os.path.basename(x))[0])
-df['File Extension'] = df['File'].apply(lambda x: os.path.splitext(os.path.basename(x))[1])
+# Apply the function to the 'File' column and split the results into two new columns
+df[['Filename', 'File Extension']] = df['File'].apply(lambda x: extract_file_details(x)).apply(pd.Series)
 
-# Check to ensure the DataFrame looks as expected
-print(df.head())
+# Assuming 'Date Modified' is the column name for the date information and already exists in the DataFrame
+# If 'Date Modified' needs to be formatted or computed, handle that logic here
 
-# Save the results back to an Excel file
-output_filename = "processed_data_with_filenames.xlsx"
-# Include only the columns 'File', 'Filename', 'Date Modified'
-df.to_excel(output_filename, columns=['File', 'Filename', 'Date Modified'], index=False)
+# Explicitly select and order columns for the output DataFrame
+df_final = df[['File', 'Filename', 'File Extension', 'Date Modified']]
+
+# Verify the results by displaying the first few rows of the DataFrame
+print(df_final.head())
+
+# Save the results back to a new Excel file, including all relevant columns
+output_filename = "processed_data_with_file_details.xlsx"
+df_final.to_excel(output_filename, index=False)
 
 print(f"Data processed and saved to {output_filename}.")
