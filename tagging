@@ -1,0 +1,42 @@
+import pandas as pd
+
+# Read the Excel file
+excel_file = 'path/to/your/excel/file.xlsx'  # Replace with the path to your Excel file
+df = pd.read_excel(excel_file)
+
+# Read the CSV file containing tags
+tags_csv = 'path/to/your/tags/file.csv'  # Replace with the path to your CSV file
+tags_df = pd.read_csv(tags_csv, header=None)
+tags = tags_df[0].tolist()
+
+# Select the range from row 11 to the last filled row in columns 'R' and 'S'
+questions = df.loc[10:, 'R'].reset_index(drop=True)
+answers = df.loc[10:, 'S'].reset_index(drop=True)
+
+# Convert questions and answers to lowercase
+questions = questions.str.lower()
+answers = answers.str.lower()
+
+# Function to find tags in a given text
+def find_tags(text, tags):
+    found_tags = [tag for tag in tags if tag.lower() in text]
+    return found_tags
+
+# Apply the function to both Question and Answer columns and combine tags
+def tag_cells(question, answer, tags):
+    question_tags = find_tags(question, tags)
+    answer_tags = find_tags(answer, tags)
+    combined_tags = list(set(question_tags + [tag for tag in answer_tags if tag not in question_tags]))
+    return ', '.join(combined_tags)
+
+# Create a new column for tags
+tags_column = [tag_cells(question, answer, tags) for question, answer in zip(questions, answers)]
+
+# Place the tags into column 'T' from row 11 onwards in the original DataFrame
+df.loc[10:, 'T'] = tags_column
+
+# Save the resulting DataFrame to a new Excel file
+output_file = 'path/to/your/output/file.xlsx'  # Replace with the desired output file path
+df.to_excel(output_file, index=False)
+
+print("Tags have been successfully added and the file has been saved.")
