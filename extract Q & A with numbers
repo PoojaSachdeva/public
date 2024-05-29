@@ -143,3 +143,9 @@ output_excel_path = 'D:\\Scholarship\\compiled_qa.xlsx'
 
 # Extract Q&A to a single Excel file
 extract_qa_to_excel_with_headers(input_excel_path, output_excel_path)
+
+
+ # Check if the PDF file exists
+        if not os.path.exists(pdf_path):
+            print(f"PDF not found: {pdf_path}")
+            continue
