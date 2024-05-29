@@ -1,0 +1,62 @@
+import pdfplumber
+from openpyxl import Workbook, load_workbook
+import re
+
+def extract_qa_to_excel_with_status(input_excel_path, output_excel_path):
+    """
+    Reads PDF paths from an input Excel file, extracts questions and answers from each PDF,
+    and writes them to a single output Excel file with a status column.
+    """
+    # Load the workbook that contains PDF paths
+    input_workbook = load_workbook(input_excel_path)
+    input_sheet = input_workbook.active
+
+    # Create an output workbook for all Q&A and status
+    output_workbook = Workbook()
+    output_sheet = output_workbook.active
+    output_sheet.append(["File Name", "Header", "Question", "Answer", "Status"])
+
+    # Create a new sheet to list all files from input
+    files_sheet = output_workbook.create_sheet(title="All Files")
+    files_sheet.append(["File Name", "Status"])
+
+    # Regex patterns for flexibility
+    objection_pattern = re.compile(r'Objection\s*\d+\s*[:;]?', re.IGNORECASE)
+    response_pattern = re.compile(r'Response\s*\d+\s*:', re.IGNORECASE)
+
+    # Iterate over all rows in the input Excel (assume PDF paths are in the first column)
+    for row in input_sheet.iter_rows(min_row=2, max_col=1, values_only=True):
+        pdf_path = row[0]
+        filename = pdf_path.split('/')[-1]
+
+        with pdfplumber.open(pdf_path) as pdf:
+            first_page = pdf.pages[0]
+            first_line = first_page.extract_text().split('\n')[0]
+
+            full_text = ''
+            for page in pdf.pages:
+                full_text += page.extract_text() + '\n'
+
+            sections = re.split(objection_pattern, full_text)
+            if len(sections) > 1:  # Data was extracted
+                for section in sections[1:]:
+                    match = response_pattern.search(section)
+                    if match:
+                        question = section[:match.start()].strip()
+                        answer = section[match.end():].strip()
+                        if question and answer:  # Check that question and answer are not empty
+                            output_sheet.append([filename, first_line, question, answer, "Data Extracted"])
+                        else:
+                            files_sheet.append([filename, "No Data Extracted"])
+            else:  # No data was extracted
+                files_sheet.append([filename, "No Data Extracted"])
+
+    # Save the compiled output workbook
+    output_workbook.save(output_excel_path)
+
+# Example paths for the input and output Excel files
+input_excel_path = 'D:\\Scholarship\\input_paths.xlsx'  # This file should have paths in the first column
+output_excel_path = 'D:\\Scholarship\\compiled_qa_with_status.xlsx'
+
+# Extract Q&A to a single Excel file with status
+extract_qa_to_excel_with_status(input_excel_path, output_excel_path)
