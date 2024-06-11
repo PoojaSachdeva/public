@@ -1,0 +1,81 @@
+import fitz  # PyMuPDF
+from openpyxl import Workbook, load_workbook
+import re
+import os
+
+def extract_qa_to_excel_with_headers_fitz(input_excel_file_path, input_excel_sheet_name, output_excel_file_path, output_excel_sheet_name):
+    """
+    Reads PDF paths from an input Excel file, extracts questions and answers from each PDF using PyMuPDF,
+    and writes them to a single output Excel file.
+    """
+    # Load the workbook that contains PDF paths
+    input_workbook = load_workbook(input_excel_file_path)
+    input_sheet = input_workbook[input_excel_sheet_name]
+
+    # Create an output workbook for all Q&A
+    output_workbook = Workbook()
+    output_sheet = output_workbook.active
+    output_sheet.append(["File Name", "Header", "Question", "Answer", "Objection Number", "Response Number", "Match"])
+
+    # Regex patterns for flexibility
+    objection_pattern = re.compile(r'(Objection\s*\d+\s*[:;]?)', re.IGNORECASE)
+    response_pattern = re.compile(r'(Response\s*\d+\s*[:;]?)', re.IGNORECASE)
+
+    # Iterate over all rows in the input Excel (assume PDF paths are in the first column)
+    for row in input_sheet.iter_rows(min_row=2, max_col=1, values_only=True):
+        pdf_path = row[0]
+        filename = pdf_path.split('/')[-1]
+
+        # Check if the PDF file exists
+        if not os.path.exists(pdf_path):
+            print(f"PDF not found: {pdf_path}")
+            continue
+
+        # Open PDF with PyMuPDF
+        doc = fitz.open(pdf_path)
+        full_text = ''
+        for page in doc:
+            full_text += page.get_text()
+
+        # Extract the first line of the first page as the header
+        first_page_text = doc[0].get_text().split('\n')
+        header = first_page_text[0] if first_page_text else "No header found"
+
+        # Split the full text into sections by Objection
+        sections = re.split(objection_pattern, full_text)
+        print(f"Found {len(sections)//2} objections.")
+
+        for i in range(1, len(sections), 2):
+            objection_header = sections[i].strip()
+            question_section = sections[i + 1].strip()
+
+            match = response_pattern.search(question_section)
+            if match:
+                question_text = question_section[:match.start()].strip()
+                answer_text = question_section[match.end():].strip()
+
+                question = re.sub(objection_pattern, '', objection_header + ' ' + question_text).strip()
+                answer = re.sub(response_pattern, '', answer_text).strip()
+
+                objection_number_match = re.search(r'\d+', objection_header)
+                objection_number = objection_number_match.group() if objection_number_match else 'N/A'
+
+                response_number_match = re.search(r'\d+', match.group())
+                response_number = response_number_match.group() if response_number_match else 'N/A'
+
+                match_status = objection_number == response_number
+
+                output_sheet.append([filename, header, question, answer, objection_number, response_number, match_status])
+
+    # Save the compiled output workbook
+    output_workbook.save(output_excel_file_path)
+    print(f"Data saved to {output_excel_file_path}")
+
+# Example paths for the input and output Excel files
+input_excel_file_path = 'D:\\Scholarship\\input_paths.xlsx'
+input_excel_sheet_name = 'Sheet1'
+output_excel_file_path = 'D:\\Scholarship\\compiled_qa.xlsx'
+output_excel_sheet_name = 'Sheet1'
+
+# Extract Q&A to a single Excel file using PyMuPDF
+extract_qa_to_excel_with_headers_fitz(input_excel_file_path, input_excel_sheet_name, output_excel_file_path, output_excel_sheet_name)
