@@ -1,0 +1,14 @@
+pip install pytesseract
+sudo apt-get install tesseract-ocr
+
+from PIL import Image
+import pytesseract
+
+# Load image from PDF
+from pdf2image import convert_from_path
+images = convert_from_path('sample.pdf')
+
+# Perform OCR on each page
+for image in images:
+    text = pytesseract.image_to_string(image)
+    print(text)
