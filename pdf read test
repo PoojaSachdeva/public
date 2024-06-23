@@ -1,0 +1,39 @@
+from pdfminer.high_level import extract_text
+
+pdf_path = 'path/to/your/pdf_file.pdf'
+text = extract_text(pdf_path)
+
+print(text[:100])  # Print first 100 characters
+
+
+
+
+# method 1
+
+import pytesseract
+from pdf2image import convert_from_path
+import os
+
+# Convert PDF to images
+pdf_path = 'path/to/your/pdf_file.pdf'
+images = convert_from_path(pdf_path)
+
+# Extract text from the first page image using Tesseract
+text = pytesseract.image_to_string(images[0])
+print(text[:100])  # Print first 100 characters
+
+# method 2
+
+sudo apt-get install pdf2htmlex
+pdf2htmlEX path/to/your/pdf_file.pdf path/to/output.html
+
+from bs4 import BeautifulSoup
+
+html_path = 'path/to/output.html'
+
+# Read the HTML file and parse text
+with open(html_path, 'r', encoding='utf-8') as file:
+    soup = BeautifulSoup(file, 'html.parser')
+    text = soup.get_text()
+
+print(text[:100])  # Print first 100 characters
