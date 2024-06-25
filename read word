@@ -1,0 +1,15 @@
+read word
+from docx import Document
+
+# Path to the Word document
+doc_path = "/mnt/data/file-0klJzLjH6Z4KL2VUHDVB3c8H"
+
+# Function to read and print all text from a Word document
+def read_doc(doc_path):
+    doc = Document(doc_path)
+    text = ' '.join([para.text for para in doc.paragraphs])
+    return text
+
+# Read and print all text from the document
+all_text = read_doc(doc_path)
+print(all_text)
