@@ -1,0 +1,11 @@
+def extract_info(row, info_list):
+    # Ensure row is a string before splitting
+    if not isinstance(row, str):
+        row = str(row)
+    return next((word for word in row.split() if word in info_list), 'Not found')
+
+
+ def extract_info(row, info_list):
+    if row is None or isinstance(row, float):
+        return 'Not found'
+    return next((word for word in row.split() if word in info_list), 'Not found')
