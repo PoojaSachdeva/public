@@ -22,8 +22,18 @@ def remove_numbers(text):
     return re.sub(r'\d+', '', text)  # Use regex to remove all numeric characters
 
 # Function to remove punctuation and symbols from text
-def remove_punctuation_and_symbols(text):
-    return text.translate(str.maketrans('', '', string.punctuation))  # Remove punctuation using translate
+# not great at handling spaces. 
+
+
+#def remove_punctuation_and_symbols(text):
+    #return text.translate(str.maketrans('', '', string.punctuation))  # Remove punctuation using translate
+
+
+# Function to remove punctuation from text
+def remove_punctuation(text):
+    return ''.join([char for char in text if char not in string.punctuation])  # Remove punctuation
+
+
 
 # General function to remove any pattern from text based on a regex pattern
 def remove_pattern(text, pattern):
