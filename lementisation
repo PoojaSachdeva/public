@@ -1,0 +1,77 @@
+import spacy
+import pandas as pd
+
+# Load the English NLP model from spaCy
+# This model helps in processing English language text for various NLP tasks.
+nlp = spacy.load('en_core_web_sm')
+
+# Load custom lemmas from an Excel file
+# Custom lemmas allow you to specify how certain words should be lemmatized,
+# overriding the default behavior of the spaCy model.
+lemma_df = pd.read_excel('custom_lemmas.xlsx')
+custom_lemmas = dict(zip(lemma_df['Word'], lemma_df['Lemma']))
+
+# Load phrases to skip from an Excel file
+# These are phrases that you do not want to lemmatize.
+phrases_df = pd.read_excel('phrases_to_skip.xlsx')
+phrases_to_skip = phrases_df['Phrase'].tolist()
+
+# Define a function to handle custom lemmatization and skipping phrases
+def custom_lemmatize(text):
+    # Process the text with the spaCy NLP model
+    doc = nlp(text)
+    lemmatized_text = []
+    word_lemma_pairs = []
+
+    # Iterate over each token (word or punctuation) in the text
+    for token in doc:
+        original_word = token.text
+        
+        # Skip lemmatization if the word is in the phrases to skip
+        if original_word in phrases_to_skip:
+            lemmatized_text.append(original_word)
+            lemma_word = original_word
+        # Use custom lemmatization if available
+        elif original_word in custom_lemmas:
+            lemma_word = custom_lemmas[original_word]
+            lemmatized_text.append(lemma_word)
+        # Otherwise, use spaCy's default lemmatization
+        else:
+            lemma_word = token.lemma_
+            lemmatized_text.append(lemma_word)
+        
+        # Collect each word and its lemmatized form
+        word_lemma_pairs.append((original_word, lemma_word))
+    
+    # Join the list of lemmatized words into a single string
+    return ' '.join(lemmatized_text), word_lemma_pairs
+
+# Load the Excel file containing your data
+df = pd.read_excel('input_data.xlsx')
+
+# Initialize a dictionary to store all words and their lemmas
+all_words = {}
+
+# Loop through each row in the DataFrame
+for index, row in df.iterrows():
+    # Apply the custom lemmatize function to each column's text
+    lemmatized_text_C, words_C = custom_lemmatize(row['ColumnA'])
+    lemmatized_text_D, words_D = custom_lemmatize(row['ColumnB'])
+    
+    # Store the lemmatized text back into the DataFrame
+    df.at[index, 'Lemmatized_C'] = lemmatized_text_C
+    df.at[index, 'Lemmatized_D'] = lemmatized_text_D
+    
+    # Update the dictionary with words from this row
+    for word, lemma in words_C + words_D:
+        if word not in all_words:
+            all_words[word] = lemma
+
+# Save the updated DataFrame with lemmatized text back to an Excel file
+df.to_excel("lemmatized_output.xlsx", index=False)
+
+# Create a DataFrame from the dictionary of all words and their lemmatized forms
+words_df = pd.DataFrame(list(all_words.items()), columns=['Original', 'Lemmatized'])
+
+# Save the DataFrame of all words to another Excel file for reference
+words_df.to_excel("all_words_lemmatized.xlsx", index=False)
