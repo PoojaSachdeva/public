@@ -1,0 +1,21 @@
+# Load your Excel file into a pandas DataFrame
+df = pd.read_excel('your_file.xlsx')  # Replace 'your_file.xlsx' with the actual file name
+
+# Concatenate text from columns A and B
+all_text = ' '.join(df['column_a'].astype(str).tolist() + df['column_b'].astype(str).tolist())
+
+# Preprocess the concatenated text
+words = preprocess_text(all_text)
+
+# Count the occurrences of each word
+word_counts = Counter(words)
+
+# Convert the word counts to a DataFrame and sort by count
+word_count_df = pd.DataFrame(word_counts.items(), columns=['Word', 'Count']).sort_values(by='Count', ascending=False)
+
+# Print the sorted word counts
+print(word_count_df)
+
+# Save the word counts to a new Excel file
+output_file_path = 'word_counts.xlsx'
+word_count_df.to_excel(output_file_path, index=False)
