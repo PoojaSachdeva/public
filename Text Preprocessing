@@ -1,0 +1,51 @@
+# Import necessary libraries
+import pandas as pd  # For handling Excel files and data manipulation
+import string  # For string operations
+import re  # For regular expressions
+from nltk.corpus import stopwords  # For stopwords
+from nltk.tokenize import word_tokenize  # For tokenizing text
+
+# Download the necessary NLTK data (stopwords and punkt tokenizer)
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+
+# Function to remove stopwords from text
+def remove_stopwords(text):
+    stop_words = set(stopwords.words('english'))  # Get the set of English stopwords
+    word_tokens = word_tokenize(text)  # Tokenize the text into words
+    filtered_text = [word for word in word_tokens if word.lower() not in stop_words]  # Remove stopwords
+    return ' '.join(filtered_text)  # Join the filtered words back into a string
+
+# Function to remove numbers from text
+def remove_numbers(text):
+    return re.sub(r'\d+', '', text)  # Use regex to remove all numeric characters
+
+# Function to remove punctuation and symbols from text
+def remove_punctuation_and_symbols(text):
+    return text.translate(str.maketrans('', '', string.punctuation))  # Remove punctuation using translate
+
+# General function to remove any pattern from text based on a regex pattern
+def remove_pattern(text, pattern):
+    return re.sub(pattern, '', text)  # Use regex to remove the specified pattern
+
+# Function to preprocess text by removing stopwords, numbers, punctuation, and symbols
+def preprocess_text(text):
+    text = remove_stopwords(text)  # Remove stopwords
+    text = remove_numbers(text)  # Remove numbers
+    text = remove_punctuation_and_symbols(text)  # Remove punctuation and symbols
+    return text  # Return the preprocessed text
+
+# Load your Excel file into a pandas DataFrame
+df = pd.read_excel('your_file.xlsx')  # Replace 'your_file.xlsx' with the actual file name
+
+# Apply the preprocess_text function to the 'text' column and create a new column 'cleaned_text'
+df['cleaned_text'] = df['text'].apply(preprocess_text)  # Replace 'text' with the actual column name
+
+# Save the cleaned data back to a new Excel file
+df.to_excel('cleaned_data.xlsx', index=False)  # Save the DataFrame to an Excel file 'cleaned_data.xlsx'
+
+# Example of how to use the general function to remove any pattern
+# Suppose you want to remove all email addresses from the text
+email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'  # Regex pattern for email addresses
+df['text_without_emails'] = df['text'].apply(lambda x: remove_pattern(x, email_pattern))  # Apply the remove_pattern function
