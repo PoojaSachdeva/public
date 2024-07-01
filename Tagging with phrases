@@ -46,3 +46,28 @@ output_file_path = 'path_to_your_output_file.xlsx'  # Replace with your output f
 df_text.to_excel(output_file_path, index=False)
 
 print("Tagging completed and saved to", output_file_path)
+
+
+from openpyxl import load_workbook
+
+# Load the Excel workbook
+file_path = '/path/to/your/excel/file.xlsx'
+workbook = load_workbook(filename=file_path)
+
+# Select the active sheet
+sheet = workbook.active
+
+# Initialize an empty string to store the combined contents
+combined_string = ""
+
+# Iterate over the rows in the sheet, skipping the header row
+for row in sheet.iter_rows(min_row=2, values_only=True):  # min_row=2 skips the header row
+    for cell in row:
+        if cell is not None:
+            combined_string += str(cell) + " "  # Add a space or any other delimiter between values
+
+# Optionally, strip any trailing spaces
+combined_string = combined_string.strip()
+
+# Print or use the combined string
+print(combined_string)
