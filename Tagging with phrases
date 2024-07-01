@@ -1,0 +1,48 @@
+import pandas as pd
+
+# Function to preprocess text by removing spaces and converting to lowercase
+def preprocess(text):
+    return text.replace(" ", "").lower()
+
+# Function to match tags in the text
+def match_tags(text, tags):
+    matched_tags = set()
+    preprocessed_text = preprocess(text)  # Preprocess the text
+
+    for tag in tags:
+        preprocessed_tag = preprocess(tag)  # Preprocess the tag
+        if preprocessed_tag in preprocessed_text:
+            matched_tags.add(tag)
+            # Remove the matched tag from the preprocessed text to prevent overlapping matches
+            preprocessed_text = preprocessed_text.replace(preprocessed_tag, "")
+
+    return matched_tags
+
+# Read the tags from the Excel file (columns B, C, D)
+file_path = 'path_to_your_excel_file.xlsx'  # Replace with your file path
+df_tags = pd.read_excel(file_path, usecols=['B', 'C', 'D'])
+
+# Flatten the tags for each column, dropping any NaN values
+tags_B = df_tags['B'].dropna().astype(str).str.strip().tolist()
+tags_C = df_tags['C'].dropna().astype(str).str.strip().tolist()
+tags_D = df_tags['D'].dropna().astype(str).str.strip().tolist()
+
+# Read the text data into a DataFrame
+text_file_path = 'path_to_your_text_file.xlsx'  # Replace with your text file path
+df_text = pd.read_excel(text_file_path)
+
+# Ensure the column you want to tag is named 'Text' (adjust if needed)
+text_column = 'Text'
+
+# Apply the tagging function to each row and store the results in new columns
+df_text['B Tags'] = df_text[text_column].apply(lambda x: list(match_tags(str(x), tags_B)))
+df_text['C Tags'] = df_text[text_column].apply(lambda x: list(match_tags(str(x), tags_C)))
+
+# Combine tags from B and C, remove duplicates, and store in a new column
+df_text['Combined Tags'] = df_text.apply(lambda row: list(set(row['B Tags']) | set(row['C Tags'])), axis=1)
+
+# Save the results to a new Excel file
+output_file_path = 'path_to_your_output_file.xlsx'  # Replace with your output file path
+df_text.to_excel(output_file_path, index=False)
+
+print("Tagging completed and saved to", output_file_path)
