@@ -1,0 +1,31 @@
+# Import the necessary libraries for data manipulation and Excel file handling
+import pandas as pd
+from openpyxl import load_workbook
+
+# Load your Excel workbook using openpyxl
+wb = load_workbook('path_to_your_file.xlsx')  # Replace 'path_to_your_file.xlsx' with your actual file path
+sheet = wb.active  # Access the active sheet within the workbook
+
+# Extract the data from the sheet. `data` becomes a generator of rows (tuples of cell values)
+data = sheet.values
+
+# Read the first row and use it as header columns
+cols = next(data)  # This assumes the first row of your Excel sheet contains the column headers
+
+# Create a pandas DataFrame using the headers and the rest of the data
+df = pd.DataFrame(data, columns=cols)
+
+# Transform the data using pandas' melt function:
+# 'id_vars' is set to the first column which contains the main topic,
+# 'value_vars' are the other columns which contain subtopics,
+# 'var_name' names the new column created from the old column names (now containing subtopic headers),
+# 'value_name' names the new column created from the old values (now containing subtopic values)
+melted_df = df.melt(id_vars=[df.columns[0]], value_vars=df.columns[1:], var_name='Subtopic', value_name='Subtopic Value')
+
+# Optionally remove any rows where subtopic values are NaN, which can occur if cells are empty
+melted_df = melted_df.dropna(subset=['Subtopic Value'])
+
+# Save the transformed DataFrame back to an Excel file
+# 'index=False' means don't write row numbers (index) to the file
+# 'engine='openpyxl'' ensures compatibility with openpyxl when saving
+melted_df.to_excel("transformed_data.xlsx", index=False, engine='openpyxl')
