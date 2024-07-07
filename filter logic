@@ -1,0 +1,155 @@
+
+'Main Topic	Sub Topic
+'Any	single
+'Any	multiple
+'Any	all
+'None	single
+'None	multiple
+'None	all
+
+
+IF Sub Topic Selection = 'All' THEN
+    CALL Function FilterByMainTopic(Main Topic Selection)
+ELSE
+    CALL Function FilterBySubTopic(Sub Topic Selection)
+
+
+Sub FilterDataAndCopyToNewSheet()
+    Dim wsSource As Worksheet
+    Dim wsTarget As Worksheet
+    Dim tbl As ListObject
+    Dim subTopicCriteria As String
+    Dim criteria As Variant
+    Dim newSheet As Worksheet
+    Dim columnIndex As Integer
+    Dim columnFound As Boolean
+    Dim visibleRange As Range
+    Dim newSheetName As String
+    Dim sheetExists As Boolean
+    
+    ' Define the worksheet and range names
+    Dim sourceSheetName As String
+    Dim targetSheetName As String
+    Dim criteriaCell As String
+    Dim tableName As String
+    Dim columnToFilter As String
+    
+    ' Assign values to variables
+    sourceSheetName = "SourceSheet" ' Replace with your actual source sheet name
+    targetSheetName = "TargetSheet" ' Replace with your actual target sheet name
+    criteriaCell = "A1" ' Cell where the criteria is stored in the source sheet
+    tableName = "Table1" ' Replace with your actual table name in the target sheet
+    columnToFilter = "SubTopicColumn" ' Replace with the actual column name to be filtered
+    
+    ' Set the worksheets and table
+    On Error GoTo ErrHandler_SetSheets
+    Set wsSource = ThisWorkbook.Sheets(sourceSheetName)
+    Set wsTarget = ThisWorkbook.Sheets(targetSheetName)
+    Set tbl = wsTarget.ListObjects(tableName)
+    On Error GoTo 0
+    
+    ' Read subtopic criteria from the specified cell
+    subTopicCriteria = wsSource.Range(criteriaCell).Value
+    
+    ' Check if the column to filter exists
+    columnFound = False
+    Dim lc As ListColumn
+    For Each lc In tbl.ListColumns
+        If lc.Name = columnToFilter Then
+            columnIndex = lc.Index
+            columnFound = True
+            Exit For
+        End If
+    Next lc
+    
+    If Not columnFound Then
+        MsgBox "Column '" & columnToFilter & "' not found in the table.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Apply filter based on criteria
+    On Error GoTo ErrHandler_Filter
+    If InStr(subTopicCriteria, ",") > 0 Then
+        criteria = Split(subTopicCriteria, ",")
+        ' Filter table for multiple criteria
+        tbl.Range.AutoFilter Field:=columnIndex, Criteria1:=criteria, Operator:=xlFilterValues
+        newSheetName = GenerateUniqueSheetName("Sub topic Filtered")
+    Else
+        ' Filter table for a single criterion
+        tbl.Range.AutoFilter Field:=columnIndex, Criteria1:=subTopicCriteria
+        newSheetName = GenerateUniqueSheetName(subTopicCriteria)
+    End If
+    On Error GoTo 0
+    
+    ' Check if there are any visible rows after filtering
+    On Error GoTo ErrHandler_SpecialCells
+    Set visibleRange = tbl.DataBodyRange.SpecialCells(xlCellTypeVisible)
+    On Error GoTo 0
+    
+    If visibleRange Is Nothing Then
+        MsgBox "No data matches your criteria!", vbExclamation
+        ' Turn off any remaining filters
+        wsTarget.AutoFilterMode = False
+        Exit Sub
+    End If
+    
+    ' Add a new sheet
+    On Error GoTo ErrHandler_AddSheet
+    Set newSheet = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    newSheet.Name = newSheetName
+    On Error GoTo 0
+    
+    ' Write criteria in cell A1
+    newSheet.Range("A1").Value = "Filtered - list criteria used: " & subTopicCriteria
+    
+    ' Paste the data in the new sheet starting from cell A3
+    visibleRange.Copy
+    newSheet.Range("A3").PasteSpecial Paste:=xlPasteValuesAndNumberFormats
+    
+    ' Inform the user
+    MsgBox "Data filtered and copied successfully.", vbInformation
+    
+    ' Turn off any remaining filters
+    wsTarget.AutoFilterMode = False
+    
+    Exit Sub
+    
+ErrHandler_SetSheets:
+    MsgBox "Error setting worksheets or table: " & Err.Description, vbCritical
+    Exit Sub
+
+ErrHandler_Filter:
+    MsgBox "Error applying filter: " & Err.Description, vbCritical
+    Exit Sub
+
+ErrHandler_SpecialCells:
+    MsgBox "Error identifying visible cells: " & Err.Description, vbCritical
+    Exit Sub
+
+ErrHandler_AddSheet:
+    MsgBox "Error adding new sheet: " & Err.Description, vbCritical
+    Exit Sub
+End Sub
+
+Function GenerateUniqueSheetName(baseName As String) As String
+    Dim newName As String
+    Dim sheetExists As Boolean
+    Dim i As Integer
+    
+    i = 1
+    newName = baseName
+    sheetExists = True
+    
+    Do While sheetExists
+        sheetExists = False
+        On Error Resume Next
+        If Not ThisWorkbook.Sheets(newName) Is Nothing Then
+            sheetExists = True
+            newName = baseName & " " & i
+            i = i + 1
+        End If
+        On Error GoTo 0
+    Loop
+    
+    GenerateUniqueSheetName = newName
+End Function
