@@ -179,3 +179,56 @@ End Sub
     Set headerRange = tbl.HeaderRowRange
     headerRange.Copy
     newSheet.Range("A3").PasteSpecial Paste:=xlPasteValues
+
+
+
+'' remove duplicates
+Sub RemoveDuplicatesSimple()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Modify the sheet name as needed
+
+    ' Define the range to work on, including all rows with data in column Q
+    Dim rng As Range
+    Set rng = ws.Range("Q1:Q" & ws.Cells(ws.Rows.Count, "Q").End(xlUp).Row)
+
+    ' Remove duplicates from the range
+    rng.RemoveDuplicates Columns:=1, Header:=xlYes
+
+    MsgBox "Duplicates based on unique keys in Column Q have been removed."
+End Sub
+
+
+'del column 
+Sub DeleteSpecifiedColumns()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")  ' Modify the sheet name as needed
+    
+    ' Define the range where the headers are located (e.g., first row of the range)
+    Dim headerRange As Range
+    Set headerRange = ws.Range("A1:Z1")  ' Adjust the range according to your setup
+    
+    ' List of column headers to check and delete if present
+    Dim columnsToDelete As Variant
+    columnsToDelete = Array("ColumnA", "ColumnB", "ColumnC")  ' Modify names as needed
+    
+    Dim cell As Range
+    Dim i As Integer
+    
+    ' Loop through each cell in the header row backward
+    For i = headerRange.Columns.Count To 1 Step -1
+        For Each cell In headerRange.Cells
+            If cell.Column = headerRange.Cells(1, i).Column Then  ' Check the same column
+                If IsInArray(cell.Value, columnsToDelete) Then
+                    ws.Columns(cell.Column).Delete
+                End If
+            End If
+        Next cell
+    Next i
+
+    MsgBox "Columns checked and deleted if specified."
+End Sub
+
+Function IsInArray(value As Variant, arr As Variant) As Boolean
+    IsInArray = (UBound(Filter(arr, value)) > -1)
+End Function
+
