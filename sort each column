@@ -1,0 +1,147 @@
+Option Explicit
+
+'sort each column data alphaetically 
+
+' Main subroutine orchestrating the sorting of columns in a table
+Sub SortTableColumnsAlphabetically()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    
+    On Error GoTo ErrorHandler
+    Application.ScreenUpdating = False ' Optimize performance by turning off screen updating
+    
+    ' Set references to the specific worksheet and table
+    Set ws = ThisWorkbook.Sheets("SheetName") ' Replace "SheetName" with the actual name of your worksheet
+    Set tbl = ws.ListObjects("YourTableName") ' Replace "YourTableName" with the actual name of your table
+    
+    ' Verify table is defined before proceeding
+    If Not tbl Is Nothing Then
+        Call SortAllColumns(tbl)
+    End If
+
+Cleanup:
+    Application.ScreenUpdating = True ' Re-enable screen updating after operations
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "An error occurred: " & Err.Description ' Handle any errors that occur during execution
+    Resume Cleanup
+End Sub
+
+' Iterate through all columns in the table, skipping the first column and sorting the rest
+Sub SortAllColumns(tbl As ListObject)
+    Dim col As ListColumn
+    
+    For Each col In tbl.ListColumns
+        If col.Index > 1 Then ' Skip the first column
+            Call SortColumn(tbl, col)
+        End If
+    Next col
+End Sub
+
+' Sort a specific column in ascending order while preserving header
+Sub SortColumn(tbl As ListObject, col As ListColumn)
+    With tbl.Sort
+        .SortFields.Clear ' Remove existing sort settings
+        .SortFields.Add Key:=col.Range, Order:=xlAscending ' Set sort key to current column and order to ascending
+        .Header = xlYes ' Confirm that the first row is a header
+        .Apply ' Execute the sort on the column
+    End With
+End Sub
+
+
+
+# sort header of table 
+Sub BackupAndSortColumnsByName()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim headers() As String
+    Dim i As Integer
+    Dim colOrder() As Integer
+    Dim colCount As Integer
+    Dim newSheet As Worksheet
+
+    ' Set the worksheet and table
+    Set ws = ThisWorkbook.Sheets("SheetName")  ' Replace "SheetName" with your actual sheet name
+    Set tbl = ws.ListObjects("YourTableName")  ' Replace "YourTableName" with your actual table name
+
+    ' Create a backup of the current worksheet
+    ws.Copy After:=ws
+    Set newSheet = ThisWorkbook.Sheets(ws.Index + 1)
+    newSheet.Name = ws.Name & "_Backup_" & Format(Now, "yyyymmdd_hhmmss") ' Name backup with timestamp
+
+    ' Initialize arrays for headers and their original order
+    colCount = tbl.ListColumns.Count
+    ReDim headers(1 To colCount)
+    ReDim colOrder(1 To colCount)
+
+    ' Store headers and their initial positions
+    For i = 1 To colCount
+        headers(i) = tbl.ListColumns(i).Name
+        colOrder(i) = i
+    Next i
+
+    ' Sort headers using VBA's built-in quick sort
+    QuickSort headers, colOrder, 1, colCount
+
+    ' Rearrange columns based on sorted headers
+    For i = 1 To colCount
+        If colOrder(i) <> i Then
+            tbl.ListColumns(colOrder(i)).Range.Cut
+            tbl.ListColumns(i).Range.Insert Shift:=xlToRight
+            ' Update the order array to reflect the new positions
+            UpdateColumnOrder colOrder, i, colOrder(i)
+        End If
+    Next i
+End Sub
+
+Sub QuickSort(arr() As String, order() As Integer, first As Long, last As Long)
+    Dim pivot As String, temp As String
+    Dim i As Long, j As Long, tempOrder As Integer
+    
+    If first < last Then
+        pivot = arr(first)
+        i = first
+        j = last
+        
+        While i < j
+            While arr(i) <= pivot And i < last
+                i = i + 1
+            End While
+            While arr(j) > pivot
+                j = j - 1
+            End While
+            If i < j Then
+                ' Swap values
+                temp = arr(i)
+                arr(i) = arr(j)
+                arr(j) = temp
+                ' Swap order
+                tempOrder = order(i)
+                order(i) = order(j)
+                order(j) = tempOrder
+            End If
+        Wend
+        
+        ' Swap pivot
+        arr(first) = arr(j)
+        arr(j) = pivot
+        tempOrder = order(first)
+        order(first) = order(j)
+        order(j) = tempOrder
+        
+        QuickSort arr, order, first, j - 1
+        QuickSort arr, order, j + 1, last
+    End If
+End Sub
+
+Sub UpdateColumnOrder(order() As Integer, fromPos As Integer, toPos As Integer)
+    Dim i As Integer
+    For i = 1 To UBound(order)
+        If order(i) = fromPos Then
+            order(i) = toPos
+        ElseIf order(i) = toPos Then
+            order(i) = fromPos
+        End If
+    Next i
+End Sub
