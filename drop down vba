@@ -1,0 +1,82 @@
+'çlear drop down list via a maco 
+  Sub ClearDropdown()
+    Dim cell As Range
+    Set cell = ThisWorkbook.Sheets("Sheet1").Range("C2")  ' Adjust sheet name and cell reference as needed
+    cell.Value = ""
+End Sub
+
+ '' Clear Dependent Dropdowns When Main Dropdown Changes
+  Private Sub Worksheet_Change(ByVal Target As Range)
+    Dim mainDropdown As Range
+    Set mainDropdown = Me.Range("C2")  ' Main dropdown cell
+
+    Application.EnableEvents = False
+    On Error GoTo CleanUp
+
+    If Not Intersect(Target, mainDropdown) Is Nothing Then
+        ' Assuming D2 is the dependent dropdown
+        Me.Range("D2").Value = ""
+    End If
+
+CleanUp:
+    Application.EnableEvents = True
+End Sub
+
+
+' if u re select option it gets removes
+      Private Sub Worksheet_Change(ByVal Target As Range)
+    Dim Oldvalue As String
+    Dim Newvalue As String
+    Dim SelectionArray As Variant
+    Dim NewList As String
+    Dim Found As Boolean
+    Dim i As Integer
+    
+    Application.EnableEvents = False
+    On Error GoTo CleanUp
+    
+    ' Check if the change is in the specific cell with the dropdown
+    If Target.Address = "$C$2" Then
+        If Target.SpecialCells(xlCellTypeAllValidation) Is Nothing Then
+            GoTo CleanUp
+        Else
+            Newvalue = Target.Value
+            Application.Undo
+            Oldvalue = Target.Value
+            Target.Value = Newvalue ' Reset new value after undoing to capture old value
+            
+            ' Split the old values into an array
+            SelectionArray = Split(Oldvalue, ", ")
+            Found = False
+            NewList = ""
+            
+            ' Check each item in the old list to see if it should be kept or removed
+            For i = 0 To UBound(SelectionArray)
+                If Trim(SelectionArray(i)) = Newvalue Then
+                    Found = True ' The new value is already in the list, mark it for removal
+                Else
+                    If NewList = "" Then
+                        NewList = Trim(SelectionArray(i))
+                    Else
+                        NewList = NewList & ", " & Trim(SelectionArray(i))
+                    End If
+                End If
+            Next i
+            
+            ' If the new value was not found in the old list, add it
+            If Not Found Then
+                If NewList = "" Then
+                    NewList = Newvalue
+                Else
+                    NewList = NewList & ", " & Newvalue
+                End If
+            End If
+            
+            ' Set the cell's value to the new list
+            Target.Value = NewList
+        End If
+    End If
+
+CleanUp:
+    Application.EnableEvents = True
+End Sub
