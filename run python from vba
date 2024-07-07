@@ -1,0 +1,25 @@
+Sub RunPythonScript()
+    Dim pythonScript As String
+    Dim pythonExecutable As String
+    Dim cmd As String
+    Dim returnCode As Long
+    
+    ' Path to Python executable
+    pythonExecutable = "C:\Python39\python.exe"
+    
+    ' Path to your Python script
+    pythonScript = "C:\Scripts\script.py"
+    
+    ' Construct the command to run the Python script
+    cmd = pythonExecutable & " " & pythonScript
+    
+    ' Run the command
+    returnCode = Shell(cmd, vbNormalFocus)
+    
+    ' Check return code
+    If returnCode = 0 Then
+        MsgBox "Python script ran successfully!", vbInformation
+    Else
+        MsgBox "Failed to run Python script. Return code: " & returnCode, vbCritical
+    End If
+End Sub
