@@ -153,3 +153,23 @@ Function GenerateUniqueSheetName(baseName As String) As String
     
     GenerateUniqueSheetName = newName
 End Function
+
+
+Sub ResetAndApplyFilter()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    
+    ' Set references to the worksheet and table
+    Set ws = ThisWorkbook.Sheets("YourSheetName") ' Change "YourSheetName" to your actual sheet name
+    Set tbl = ws.ListObjects("YourTableName")    ' Change "YourTableName" to your actual table name
+    
+    ' Check if the table has filters active and clear them
+    If tbl.AutoFilter.FilterMode Then
+        tbl.AutoFilter.ShowAllData
+    End If
+    
+    ' Reapply filter to the table without any criteria
+    tbl.Range.AutoFilter
+
+End Sub
+
