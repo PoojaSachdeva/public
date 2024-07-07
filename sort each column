@@ -1,3 +1,51 @@
+'buuble sort
+Sub BackupAndSortTableColumnsByName()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim i As Integer
+    Dim j As Integer
+    Dim temp As Range
+    Dim newSheet As Worksheet
+    
+    On Error GoTo ErrorHandler
+    Application.ScreenUpdating = False ' Turn off screen updating to enhance performance
+
+    ' Set the worksheet and table
+    Set ws = ThisWorkbook.Sheets("SheetName") ' Replace "SheetName" with your actual sheet name
+    Set tbl = ws.ListObjects("YourTableName") ' Replace "YourTableName" with your actual table name
+    
+    ' Create a backup of the sheet
+    ws.Copy After:=ws
+    Set newSheet = ThisWorkbook.Sheets(ws.Index + 1)
+    newSheet.Name = ws.Name & "_Backup_" & Format(Now, "yyyymmdd_hhmmss") ' Name backup with timestamp
+
+    ' Bubble sort algorithm to sort columns by header name
+    For i = 1 To tbl.ListColumns.Count - 1
+        For j = i + 1 To tbl.ListColumns.Count
+            If tbl.HeaderRowRange.Cells(1, i).Value > tbl.HeaderRowRange.Cells(1, j).Value Then
+                ' Swap the columns
+                Set temp = tbl.ListColumns(i).Range
+                tbl.ListColumns(i).DataBodyRange.Cut
+                tbl.ListColumns(j).Range.PasteSpecial Paste:=xlPasteAll, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+                temp.Cut
+                tbl.ListColumns(j - 1).Range.PasteSpecial Paste:=xlPasteAll, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+                Application.CutCopyMode = False
+            End If
+        Next j
+    Next i
+
+Cleanup:
+    Application.ScreenUpdating = True ' Re-enable screen updating after operations
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "An error occurred: " & Err.Description ' Handle any errors that occur during execution
+    Resume Cleanup
+End Sub
+
+
+
+
 Option Explicit
 
 'sort each column data alphaetically 
