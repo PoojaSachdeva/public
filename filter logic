@@ -173,3 +173,9 @@ Sub ResetAndApplyFilter()
 
 End Sub
 
+
+
+ Copy the headers
+    Set headerRange = tbl.HeaderRowRange
+    headerRange.Copy
+    newSheet.Range("A3").PasteSpecial Paste:=xlPasteValues
