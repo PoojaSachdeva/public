@@ -23,3 +23,24 @@ Sub RunPythonScript()
         MsgBox "Failed to run Python script. Return code: " & returnCode, vbCritical
     End If
 End Sub
+
+
+
+import openpyxl
+
+# Path to your Excel file
+file_path = 'example.xlsx'
+
+# Load the existing workbook
+workbook = openpyxl.load_workbook(file_path)
+
+# Add a new sheet
+new_sheet = workbook.create_sheet(title='HelloWorldSheet')
+
+# Write "Hello, World!" to the first cell of the new sheet
+new_sheet['A1'] = 'Hello, World!'
+
+# Save the workbook
+workbook.save(file_path)
+
+print("Added 'Hello, World!' to a new sheet in the Excel file.")
