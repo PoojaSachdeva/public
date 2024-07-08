@@ -1,0 +1,38 @@
+Private Sub Worksheet_Change(ByVal Target As Range)
+    Dim ComboBox1 As Object
+    Set ComboBox1 = Me.OLEObjects("ComboBox1").Object
+    
+    Dim selectedItems As Collection
+    Set selectedItems = New Collection
+    
+    Dim i As Integer
+    Dim allSelected As Boolean
+    allSelected = False
+    
+    ' Gather selected items
+    For i = 0 To ComboBox1.ListCount - 1
+        If ComboBox1.Selected(i) Then
+            selectedItems.Add ComboBox1.List(i)
+            If ComboBox1.List(i) = "All" Then
+                allSelected = True
+            End If
+        End If
+    Next i
+    
+    ' Restrict selection logic
+    If allSelected And selectedItems.Count > 1 Then
+        MsgBox "You cannot select 'All' with other options."
+        For i = 0 To ComboBox1.ListCount - 1
+            If ComboBox1.List(i) <> "All" Then
+                ComboBox1.Selected(i) = False
+            End If
+        Next i
+    ElseIf selectedItems.Count > 1 And allSelected Then
+        MsgBox "You cannot select other options with 'All'."
+        For i = 0 To ComboBox1.ListCount - 1
+            If ComboBox1.List(i) = "All" Then
+                ComboBox1.Selected(i) = False
+            End If
+        Next i
+    End If
+End Sub
