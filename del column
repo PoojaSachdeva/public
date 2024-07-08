@@ -1,0 +1,38 @@
+Sub DeleteColumnsBasedOnHeader()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Filtered Data")
+    
+    Dim headerRange As Range
+    Set headerRange = ws.Range("A1:Q1")
+    
+    Dim columnsToDelete As Collection
+    Set columnsToDelete = New Collection
+    
+    Dim i As Integer
+    Dim cell As Range
+    
+    ' First loop: Identify columns to delete
+    For i = 1 To headerRange.Columns.Count
+        Set cell = headerRange.Cells(1, i)
+        If IsInArray(cell.Value, Array("Combined Subtopics", "Combined Data")) Then
+            ' Store column numbers to delete
+            columnsToDelete.Add cell.Column
+        End If
+    Next i
+    
+    ' Second loop: Delete columns in reverse order
+    For i = columnsToDelete.Count To 1 Step -1
+        ws.Columns(columnsToDelete(i)).Delete
+    Next i
+End Sub
+
+Function IsInArray(value As Variant, arr As Variant) As Boolean
+    Dim element As Variant
+    For Each element In arr
+        If element = value Then
+            IsInArray = True
+            Exit Function
+        End If
+    Next element
+    IsInArray = False
+End Function
