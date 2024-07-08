@@ -1,0 +1,24 @@
+Sub CheckThemesAndRunMacro()
+    ' Check if both main and sub themes are blank
+    If IsEmpty(Range("main").Value) And IsEmpty(Range("sub").Value) Then
+        MsgBox "Please choose a sub theme or main theme."
+        Exit Sub
+    End If
+    
+    ' Run Macro1 if sub theme is blank; otherwise, run Macro2
+    If IsEmpty(Range("sub").Value) Then
+        Call Macro1
+    Else
+        Call Macro2
+    End If
+End Sub
+
+Sub Macro1()
+    MsgBox "Running Macro1 because sub theme is blank."
+    ' Add your code for Macro1 here
+End Sub
+
+Sub Macro2()
+    MsgBox "Running Macro2 because sub theme is not blank."
+    ' Add your code for Macro2 here
+End Sub
