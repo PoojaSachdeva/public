@@ -36,3 +36,39 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Next i
     End If
 End Sub
+
+
+
+Private Sub Worksheet_Change(ByVal Target As Range)
+    ' Check if the changed cell is A1
+    If Not Intersect(Target, Me.Range("A1")) Is Nothing Then
+        Dim selectedItems As Variant
+        Dim item As Variant
+        Dim allSelected As Boolean
+        allSelected = False
+
+        ' Split the selected items into an array
+        selectedItems = Split(Target.Value, ",")
+
+        ' Check if "All" is selected
+        For Each item In selectedItems
+            If Trim(item) = "All" Then
+                allSelected = True
+                Exit For
+            End If
+        Next item
+
+        ' Restrict selection logic
+        If allSelected And UBound(selectedItems) > 0 Then
+            MsgBox "You cannot select 'All' with other options."
+            Application.EnableEvents = False
+            Target.Value = "All"
+            Application.EnableEvents = True
+        ElseIf UBound(selectedItems) > 0 And allSelected Then
+            MsgBox "You cannot select other options with 'All'."
+            Application.EnableEvents = False
+            Target.Value = Join(Filter(selectedItems, "All", True, vbTextCompare), ",")
+            Application.EnableEvents = True
+        End If
+    End If
+End Sub
