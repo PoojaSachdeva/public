@@ -1,0 +1,35 @@
+import pandas as pd  # Import the pandas library, which helps with data manipulation
+
+# Load your Excel file into a pandas DataFrame
+df = pd.read_excel('path_to_your_file.xlsx')
+
+# Initialize an empty DataFrame to store results
+# This DataFrame will eventually contain two columns: 'Header' and 'Value'
+result = pd.DataFrame(columns=['Header', 'Value'])
+
+# Iterate over each column in the DataFrame
+# 'columnName' will be the header name, and 'columnData' will be the data under that header
+for (columnName, columnData) in df.iteritems():
+    # Drop any NaN values from column data
+    # NaN values represent empty cells in Excel
+    # 'reset_index(drop=True)' makes sure the index starts from 0 for each column
+    clean_column_data = columnData.dropna().reset_index(drop=True)
+    
+    # Create a temporary DataFrame that pairs each header with its corresponding data
+    # This repeats the header for each data entry in the column
+    temp_df = pd.DataFrame({
+        'Header': [columnName] * len(clean_column_data),  # Repeat the column name
+        'Value': clean_column_data  # List of values under the column
+    })
+    
+    # Append the temporary DataFrame to the main results DataFrame
+    # 'ignore_index=True' makes sure the indices in the result DataFrame are continuous
+    result = pd.concat([result, temp_df], ignore_index=True)
+
+# Optionally, save the result to a new Excel file
+# This allows you to see the results in Excel format
+result.to_excel('transformed_data.xlsx', index=False)
+
+# Print the result DataFrame to the console
+# This helps in quickly checking what the DataFrame looks like without needing to open Excel
+print(result)
