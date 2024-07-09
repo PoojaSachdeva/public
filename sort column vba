@@ -1,0 +1,30 @@
+Sub SortColumnsIndependently()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim col As Range
+
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("YourSheetName") ' Replace "YourSheetName" with your actual sheet name
+
+    ' Define the range of columns from A to K (columns 1 to 11)
+    For i = 1 To 11
+        ' Find the last filled row in the current column
+        lastRow = ws.Cells(ws.Rows.Count, i).End(xlUp).Row
+        
+        ' Set the range for the current column from row 2 to the last filled row
+        Set col = ws.Range(ws.Cells(2, i), ws.Cells(lastRow, i))
+        
+        ' Sort the data in the column alphabetically
+        With ws.Sort
+            .SortFields.Clear
+            .SortFields.Add Key:=col, Order:=xlAscending
+            .SetRange col
+            .Header = xlNo
+            .MatchCase = False
+            .Orientation = xlTopToBottom
+            .Apply
+        End With
+    Next i
+
+    MsgBox "Columns have been sorted independently."
+End Sub
