@@ -1,0 +1,18 @@
+import pandas as pd
+
+# Creating a sample DataFrame with unsorted comma-separated values in a column
+data = {
+    'Column': ['banana, apple, cherry', 'elephant, Dog, cat', 'Green, blue, red']
+}
+df = pd.DataFrame(data)
+
+# Displaying the DataFrame before sorting
+print("Before Sorting:")
+print(df)
+
+# Sorting the comma-separated values in each cell of 'Column' alphabetically and case-insensitively
+df['Column'] = df['Column'].apply(lambda x: ', '.join(sorted(x.split(', '), key=str.lower)))
+
+# Displaying the DataFrame after sorting
+print("\nAfter Sorting:")
+print(df)
