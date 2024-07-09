@@ -1,0 +1,33 @@
+Sub ConsolidateDataInOneColumn()
+    Dim ws As Worksheet
+    Dim lastRow As Long, lastCol As Long, newRow As Long
+    Dim i As Integer, j As Integer
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("YourSheetName") ' Change "YourSheetName" to your actual sheet name
+    
+    ' Define the last column (Column K in this case)
+    lastCol = 11 ' Column K is the 11th column
+    
+    ' Initialize newRow to start pasting data in the new column
+    newRow = 2
+    
+    ' Loop through each column from A to K
+    For i = 1 To lastCol
+        ' Find the last filled row in the current column
+        lastRow = ws.Cells(ws.Rows.Count, i).End(xlUp).Row
+        
+        ' Loop through each row starting from row 2 to lastRow in the current column
+        For j = 2 To lastRow
+            ' Copy the data to the new column (next available row in the last column + 1)
+            ws.Cells(newRow, lastCol + 1).Value = ws.Cells(j, i).Value
+            ' Increment newRow to move to the next available row in the new column
+            newRow = newRow + 1
+        Next j
+    Next i
+    
+    ' Optionally, set the header of the new column
+    ws.Cells(1, lastCol + 1).Value = "Consolidated Data"
+    
+    MsgBox "Data consolidation into one column is complete!"
+End Sub
