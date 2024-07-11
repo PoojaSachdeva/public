@@ -1,0 +1,48 @@
+Sub AddColumnsToPivotValues()
+    ' This macro automates the process of adding specified columns to the Values area of a pivot table and arranging them in a specific order:
+    ' - Defines the worksheet and pivot table.
+    ' - Specifies the columns to be added to the Values area.
+    ' - Loops through the specified columns and adds each to the Values area of the pivot table.
+    ' - Checks if each field exists in the pivot table before adding.
+    ' - Optionally reorders the fields in the Values area based on the specified order.
+    ' - Displays a message box when the process is complete.
+
+    Sub AddColumnsToPivotValues()
+    Dim ws As Worksheet
+    Dim pt As PivotTable
+    Dim pf As PivotField
+    Dim pfName As String
+    Dim i As Integer
+
+    ' Define the worksheet and pivot table
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    Set pt = ws.PivotTables("PivotTable1") ' Change to your pivot table name
+
+    ' Define the columns you want to add to the Values area
+    Dim columns As Variant
+    columns = Array("Column1", "Column2", "Column3") ' Change to your column names
+
+    ' Loop through the array and add each column to the Values area
+    For i = LBound(columns) To UBound(columns)
+        pfName = columns(i)
+        
+        ' Check if the field exists in the Pivot Table
+        On Error Resume Next
+        Set pf = pt.PivotFields(pfName)
+        On Error GoTo 0
+        
+        If Not pf Is Nothing Then
+            pt.AddDataField pf, pfName, xlSum ' You can change xlSum to another function like xlCount, xlAverage, etc.
+        Else
+            MsgBox "Field " & pfName & " not found in the pivot table."
+        End If
+    Next i
+
+    ' Rearrange the order of fields in the Values area if needed
+    ' This part is optional and depends on your specific requirements
+    For i = 1 To UBound(columns) + 1
+        pt.PivotFields("Sum of " & columns(i - 1)).Position = i
+    Next i
+
+    MsgBox "Columns added to the Values area in the specified order."
+End Sub
