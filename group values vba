@@ -1,0 +1,55 @@
+Sub GroupValuesRowWiseTable()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim dict As Object
+    Dim lastRow As Long
+    Dim i As Long
+    Dim category As String
+    Dim groupedValues As String
+    Dim colA As ListColumn
+    Dim colB As ListColumn
+    Dim colC As ListColumn
+    
+    ' Set the worksheet and table
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    Set tbl = ws.ListObjects("DataTable") ' Change "DataTable" to your table name
+    
+    ' Get the last row with data in the table
+    lastRow = tbl.ListRows.Count + 1 ' Including the header row
+    
+    ' Create a dictionary to store grouped values
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    ' Get columns
+    Set colA = tbl.ListColumns("Column A")
+    Set colB = tbl.ListColumns("Column B")
+    
+    ' Add a new column for grouped values if it doesn't exist
+    On Error Resume Next
+    Set colC = tbl.ListColumns("Grouped Values")
+    On Error GoTo 0
+    
+    If colC Is Nothing Then
+        Set colC = tbl.ListColumns.Add
+        colC.Name = "Grouped Values"
+    End If
+    
+    ' Loop through the rows and collect the values to group
+    For i = 2 To lastRow ' Assuming you have headers in row 1
+        category = colA.DataBodyRange.Cells(i - 1, 1).Value
+        If Not dict.exists(category) Then
+            dict(category) = colB.DataBodyRange.Cells(i - 1, 1).Value
+        Else
+            dict(category) = dict(category) & ", " & colB.DataBodyRange.Cells(i - 1, 1).Value
+        End If
+    Next i
+    
+    ' Loop through the rows again to place the grouped values in column C
+    For i = 2 To lastRow
+        category = colA.DataBodyRange.Cells(i - 1, 1).Value
+        colC.DataBodyRange.Cells(i - 1, 1).Value = dict(category)
+    Next i
+    
+    ' Clean up
+    Set dict = Nothing
+End Sub
