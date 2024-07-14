@@ -1,0 +1,70 @@
+Function FilterTableValues(ws As Worksheet, tblName As String, valuesToFilter As Variant) As String
+    Dim tbl As ListObject
+    Dim filterRange As Range
+    Dim cell As Range
+    Dim value As Variant
+    Dim valueFound As Boolean
+    Dim notFoundValues As String
+
+    ' Set the table
+    Set tbl = ws.ListObjects(tblName)
+    
+    ' Define the range to filter (data body range of the table)
+    Set filterRange = tbl.DataBodyRange.Columns(1) ' Change to your column index if needed
+    
+    ' Initialize not found values string
+    notFoundValues = ""
+    
+    ' Loop through each value to filter
+    For Each value In valuesToFilter
+        ' Initialize valueFound as False for each value
+        valueFound = False
+
+        ' Check if the value is present in the column
+        For Each cell In filterRange
+            If cell.Value = value Then
+                valueFound = True
+                Exit For
+            End If
+        Next cell
+
+        ' If the value is not found, add it to the not found values string
+        If Not valueFound Then
+            If notFoundValues <> "" Then
+                notFoundValues = notFoundValues & ", "
+            End If
+            notFoundValues = notFoundValues & value
+        End If
+    Next value
+
+    ' Apply the filter for the first value in the array if needed
+    If UBound(valuesToFilter) >= 0 Then
+        tbl.Range.AutoFilter Field:=1, Criteria1:=valuesToFilter(0)
+    End If
+    
+    ' Return the not found values
+    FilterTableValues = notFoundValues
+End Function
+Sub MainRoutine()
+    Dim ws As Worksheet
+    Dim valuesToFilter As Variant
+    Dim notFoundValues As String
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    
+    ' Values to filter
+    valuesToFilter = Array("Value1", "Value2", "Value3") ' Change to your values
+    
+    ' Call the function and get the not found values
+    notFoundValues = FilterTableValues(ws, "Table1", valuesToFilter) ' Change to your table name
+    
+    ' Print or use the not found values as needed
+    If notFoundValues <> "" Then
+        MsgBox "The following values were not found: " & notFoundValues, vbExclamation
+    End If
+    
+    ' Continue with the rest of your code here
+    ' ...
+End Sub
+
