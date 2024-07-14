@@ -1,0 +1,29 @@
+Sub RemoveDuplicatesByColumnName()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim targetRange As Range
+    Dim columnName As String
+    Dim columnNumber As Integer
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Define the column name to check for duplicates
+    columnName = "A" ' Change to your desired column name (e.g., "A" for column A)
+    
+    ' Convert column name to number
+    columnNumber = Range(columnName & "1").Column
+    
+    ' Find the last filled row and column
+    lastRow = ws.Cells(ws.Rows.Count, columnNumber).End(xlUp).Row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    ' Define the target range
+    Set targetRange = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol))
+    
+    ' Remove duplicates based on the specified column
+    targetRange.RemoveDuplicates Columns:=columnNumber, Header:=xlYes
+    
+    MsgBox "Duplicates removed based on column " & columnName
+End Sub
