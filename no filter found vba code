@@ -1,0 +1,30 @@
+Sub FilterTable()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim filterColumn As ListColumn
+    Dim valueToFilter As String
+    Dim visibleRows As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    
+    ' Set the table
+    Set tbl = ws.ListObjects("Table1") ' Change to your table name
+    
+    ' Define the column to filter (e.g., Column 1)
+    Set filterColumn = tbl.ListColumns(1) ' Change to your column index
+    
+    ' Value to filter
+    valueToFilter = "YourValue" ' Change to your value
+    
+    ' Apply the filter
+    tbl.Range.AutoFilter Field:=filterColumn.Index, Criteria1:=valueToFilter
+    
+    ' Check the number of visible rows
+    visibleRows = Application.WorksheetFunction.Subtotal(3, tbl.DataBodyRange.Columns(1))
+    
+    ' If no visible rows (only header is visible), show a message
+    If visibleRows = 0 Then
+        MsgBox "No data matched the filter criteria.", vbExclamation
+    End If
+End Sub
