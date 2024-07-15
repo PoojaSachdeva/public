@@ -1,0 +1,21 @@
+Sub FormatPainterToRange()
+    Dim ws As Worksheet
+    Dim sourceCell As Range
+    Dim targetRange As Range
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Define the source cell and target range
+    Set sourceCell = ws.Range("A1") ' Change to your source cell
+    Set targetRange = ws.Range("B1:B10") ' Change to your target range
+    
+    ' Copy format from source to target range
+    sourceCell.Copy
+    targetRange.PasteSpecial Paste:=xlPasteFormats
+    
+    ' Clear the clipboard to remove the copy mode
+    Application.CutCopyMode = False
+    
+    MsgBox "Format copied from " & sourceCell.Address & " to " & targetRange.Address
+End Sub
