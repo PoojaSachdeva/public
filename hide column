@@ -1,0 +1,12 @@
+Sub HideColumnsInAllSheets()
+    Dim ws As Worksheet
+    Dim col As Long
+    
+    ' Loop through each worksheet in the workbook
+    For Each ws In ThisWorkbook.Worksheets
+        ' Loop through columns D to AS (4 to 45)
+        For col = 4 To 45
+            ws.Columns(col).Hidden = True
+        Next col
+    Next ws
+End Sub
