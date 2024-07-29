@@ -1,0 +1,20 @@
+Sub HideRowsContainingPIP()
+    Dim ws As Worksheet
+    Dim i As Long
+    Dim cell As Range
+    Dim searchTerm As String
+    
+    searchTerm = "PIP"
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    Application.ScreenUpdating = False
+    
+    For i = 1 To 100
+        Set cell = ws.Cells(i, 5)
+        If InStr(1, cell.Value, searchTerm, vbTextCompare) > 0 Then
+            cell.EntireRow.Hidden = True
+        End If
+    Next i
+    
+    Application.ScreenUpdating = True
+End Sub
