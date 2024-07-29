@@ -1,0 +1,22 @@
+Sub HideYellowRows()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim yellowColor As Long
+    
+    ' Set the worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    
+    ' Define the yellow color (RGB value for yellow)
+    yellowColor = RGB(255, 255, 0)
+    
+    ' Set the range to check (you can change the range as needed)
+    Set rng = ws.UsedRange
+    
+    ' Loop through each cell in the range
+    For Each cell In rng
+        If cell.Interior.Color = yellowColor Then
+            cell.EntireRow.Hidden = True
+        End If
+    Next cell
+End Sub
