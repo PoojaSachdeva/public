@@ -1,0 +1,32 @@
+Sub DeleteHiddenRows()
+    Dim ws As Worksheet
+    Dim rowNum As Long
+    Dim delRange As Range
+    
+    ' Set the worksheet where you want to delete hidden rows
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet's name
+    
+    ' Turn off screen updating for performance
+    Application.ScreenUpdating = False
+    
+    ' Loop through each row in the worksheet
+    For rowNum = ws.Rows.Count To 1 Step -1
+        ' Check if the row is hidden
+        If ws.Rows(rowNum).Hidden = True Then
+            ' If delRange is not set, set it to the current row, else union the current row
+            If delRange Is Nothing Then
+                Set delRange = ws.Rows(rowNum)
+            Else
+                Set delRange = Union(delRange, ws.Rows(rowNum))
+            End If
+        End If
+    Next rowNum
+    
+    ' If there are hidden rows, delete them all at once
+    If Not delRange Is Nothing Then
+        delRange.Delete
+    End If
+    
+    ' Turn screen updating back on
+    Application.ScreenUpdating = True
+End Sub
