@@ -30,3 +30,27 @@ Sub DeleteHiddenRows()
     ' Turn screen updating back on
     Application.ScreenUpdating = True
 End Sub
+
+
+import openpyxl
+
+def delete_hidden_rows(file_path, sheet_name):
+    # Load the workbook and the specific sheet
+    wb = openpyxl.load_workbook(file_path)
+    ws = wb[sheet_name]
+
+    # Loop through rows in reverse order to avoid issues with deleting rows
+    for row in range(ws.max_row, 0, -1):
+        # Check if the row is hidden
+        if ws.row_dimensions[row].hidden:
+            ws.delete_rows(row)
+
+    # Save the workbook (overwrite the original file)
+    wb.save(file_path)
+    wb.close()
+
+# Usage
+file_path = 'example.xlsx'  # Replace with your file path
+sheet_name = 'Sheet1'       # Replace with your sheet name
+
+delete_hidden_rows(file_path, sheet_name)
