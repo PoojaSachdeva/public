@@ -1,0 +1,24 @@
+import pandas as pd
+
+# Load the Excel file
+file_path = 'your_excel_file.xlsx'
+df = pd.read_excel(file_path, engine='openpyxl')
+
+# Add column to flag duplicates (True if duplicated, False otherwise)
+df['R'] = df.duplicated(subset='K', keep=False)
+
+# Add a column to indicate which rows are duplicates of each other
+duplicate_mapping = {}
+for idx, value in df['K'].items():
+    if value not in duplicate_mapping:
+        duplicate_mapping[value] = [idx + 1]  # Store the row index (1-based)
+    else:
+        duplicate_mapping[value].append(idx + 1)
+
+df['S'] = df['K'].apply(lambda x: ','.join(map(str, duplicate_mapping[x])) if len(duplicate_mapping[x]) > 1 else '')
+
+# Save the updated DataFrame back to Excel
+output_file = 'output_file.xlsx'
+df.to_excel(output_file, index=False)
+
+print(f"Duplicates flagged and saved to {output_file}")
