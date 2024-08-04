@@ -1,0 +1,15 @@
+Sub RemoveDuplicatesFromTableColumn()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim tblColumn As ListColumn
+    
+    ' Set the worksheet and the table name
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change "Sheet1" to your sheet name
+    Set tbl = ws.ListObjects("Table1") ' Change "Table1" to your table's name
+    
+    ' Set the column you want to check for duplicates (e.g., the first column in the table)
+    Set tblColumn = tbl.ListColumns("ColumnName") ' Replace "ColumnName" with your column name
+    
+    ' Remove duplicates based on the selected column
+    tblColumn.DataBodyRange.RemoveDuplicates Columns:=1, Header:=xlYes ' Set Header:=xlNo if your table has no headers
+End Sub
