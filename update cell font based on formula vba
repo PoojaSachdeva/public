@@ -1,0 +1,19 @@
+Sub ChangeFontColorBasedOnContent()
+    Dim ws As Worksheet
+    Dim cell As Range
+    
+    ' Set your specific worksheet here
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Replace "Sheet1" with your worksheet name
+    
+    ' Loop through all cells in the used range of the specified worksheet
+    For Each cell In ws.UsedRange
+        ' Check if the cell contains a formula
+        If cell.HasFormula Then
+            ' Set font color to green if it's a formula
+            cell.Font.Color = RGB(0, 128, 0) ' Green
+        Else
+            ' Set font color to blue if it's a value
+            cell.Font.Color = RGB(0, 0, 255) ' Blue
+        End If
+    Next cell
+End Sub
