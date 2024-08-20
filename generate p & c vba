@@ -1,0 +1,22 @@
+Sub GeneratePermutations()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Change to your sheet name
+    
+    Dim i As Integer, j As Integer, k As Integer
+    Dim lastRowA As Integer, lastRowB As Integer, lastRowC As Integer
+    Dim rowE As Integer
+    
+    lastRowA = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    lastRowB = ws.Cells(ws.Rows.Count, 2).End(xlUp).Row
+    lastRowC = ws.Cells(ws.Rows.Count, 3).End(xlUp).Row
+    rowE = 1
+    
+    For i = 1 To lastRowA
+        For j = 1 To lastRowB
+            For k = 1 To lastRowC
+                ws.Cells(rowE, 5).Value = ws.Cells(i, 1).Value & " " & ws.Cells(j, 2).Value & " " & ws.Cells(k, 3).Value
+                rowE = rowE + 1
+            Next k
+        Next j
+    Next i
+End Sub
