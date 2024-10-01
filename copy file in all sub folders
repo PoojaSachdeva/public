@@ -1,0 +1,35 @@
+# Import the required modules from the Python Standard Library
+import shutil  # Used for high-level file operations like copying
+import os  # Used to interact with the operating system
+
+# Define a function to copy a PDF to all subfolders in a specified directory
+def copy_pdf_to_subfolders(main_folder, pdf_file):
+    """
+    This function copies a specified PDF file into each subfolder within a given main folder.
+
+    Parameters:
+    main_folder (str): The path to the directory containing subfolders.
+    pdf_file (str): The path to the PDF file to be copied.
+    """
+
+    # Create a list of all the subfolders in the main folder
+    # os.scandir() returns an iterator of all the entries in the given directory
+    # We use a list comprehension to create a list of paths to each directory entry
+    # f.is_dir() checks if the directory entry is a folder/directory
+    subfolders = [f.path for f in os.scandir(main_folder) if f.is_dir()]
+
+    # Loop through each folder in the list of subfolders
+    for folder in subfolders:
+        # Copy the PDF file into the current folder
+        # shutil.copy() takes two arguments: the file to copy and the destination folder
+        shutil.copy(pdf_file, folder)
+        
+        # Print a message to the console to confirm the file has been copied
+        print(f"Copied to {folder}")
+
+# Example usage of the function:
+# Replace 'path_to_main_folder' with the actual path to your main folder
+# Replace 'path_to_pdf_file.pdf' with the actual path to your PDF file
+main_folder_path = 'path_to_main_folder'
+pdf_file_path = 'path_to_pdf_file.pdf'
+copy_pdf_to_subfolders(main_folder_path, pdf_file_path)
