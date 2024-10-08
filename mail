@@ -1,0 +1,19 @@
+Hi Team,
+
+I'm reaching out to discuss whether we should include other teams' objection responses in our template. Currently, I understand that some of us are including these responses, while others are not. I’d like to align on our approach and get your input.
+
+Overview of the Options:
+
+Option 1: Including Other Teams' Objections
+
+Pros: This saves time, as we can request that State Filing uses our template exclusively.
+Cons: We rely on our segregation mechanism to exclude other teams' objections. Our current method for identifying R&P objections is based on a keyword search. If all subtopics contain only R&P-related terms, we exclude them from our analysis. However, if there’s an R&P-related tag alongside an indication-related word, we keep it in the analysis.
+Out of 265 objections reviewed, we identified only 19 that were strictly R&P. The method has been working well, but there’s a potential issue I’m considering: if there are phrases like “written premium” that would fall under the BL SAS team, these could be tagged as R&P due to similar keywords. Although I haven’t encountered this yet, it’s a possibility to keep in mind.
+Option 2: Using Only Our Own Objections
+
+Pros: This provides a more accurate count for our objection database.
+Cons: It adds another step, as we’ll need to copy and paste objection responses manually.
+I’d love to hear your thoughts on which approach you think we should take. Once we align, we can inform both the team and State Filing.
+
+Thanks,
+Simran
