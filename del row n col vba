@@ -1,0 +1,16 @@
+Sub DeleteColumnsAndRows()
+    Dim ws As Worksheet
+
+    ' Loop through each worksheet in the workbook
+    For Each ws In ThisWorkbook.Worksheets
+        ' Delete columns D, E, G, H, J, K, M, N, P, Q
+        ws.Columns("D:E").Delete
+        ws.Columns("G:H").Delete
+        ws.Columns("J:K").Delete
+        ws.Columns("M:N").Delete
+        ws.Columns("P:Q").Delete
+        
+        ' Delete rows 3 to 64
+        ws.Rows("3:64").Delete
+    Next ws
+End Sub
