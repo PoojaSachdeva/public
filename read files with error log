@@ -1,0 +1,102 @@
+# Import necessary modules
+import os  # For file system operations (checking file paths, etc.)
+import re  # For working with regular expressions to extract patterns
+import docx  # For reading and parsing Word documents
+from openpyxl import Workbook, load_workbook  # For handling Excel files
+
+def extract_qa_to_excel_with_headers_word(input_excel_file_path, input_excel_sheet_name, output_excel_file_path, success_log_path, error_log_path):
+    """
+    This function reads Word document paths from an input Excel file, extracts questions and answers from each document,
+    and writes them into an output Excel file. It also logs which files were successfully processed and which files
+    encountered errors.
+
+    Parameters:
+    - input_excel_file_path: The path to the input Excel file containing Word document paths.
+    - input_excel_sheet_name: The name of the sheet in the input Excel file.
+    - output_excel_file_path: The path where the processed data will be saved as an Excel file.
+    - success_log_path: The path to save the log file for successfully processed files.
+    - error_log_path: The path to save the log file for files with errors.
+    """
+
+    # Load the input Excel file that contains Word document paths
+    input_workbook = load_workbook(input_excel_file_path)  # Open the Excel file
+    input_sheet = input_workbook[input_excel_sheet_name]  # Access the specified sheet
+
+    # Create a new Excel workbook where extracted data will be stored
+    output_workbook = Workbook()  # Create a new Excel workbook
+    output_sheet = output_workbook.active  # Get the default sheet
+    # Add headers to the output Excel file to describe the data columns
+    output_sheet.append(["File Name", "Header", "Question", "Answer", "Objection Number", "Response Number", "Match Status"])
+
+    # Open log files for tracking processing status
+    success_log = open(success_log_path, "w")  # Log file for successfully processed files
+    error_log = open(error_log_path, "w")  # Log file for files that encountered errors
+
+    # Define regular expressions to identify patterns in the text
+    objection_pattern = re.compile(r"Objections\s*\d+\s*[:.]*", re.IGNORECASE)  # Pattern for objections
+    response_pattern = re.compile(r"Response\s*\d+\s*[:.]*", re.IGNORECASE)  # Pattern for responses
+
+    # Iterate over each row in the input Excel file (starting from the second row)
+    for row in input_sheet.iter_rows(min_row=2, max_col=1, values_only=True):
+        docx_path = row[0]  # Get the Word document path from the first column
+        if not docx_path:  # If the row is empty, skip it
+            error_log.write(f"Empty row encountered. Skipping.\n")
+            continue
+
+        # Extract just the file name from the full path (e.g., "example.docx")
+        filename = docx_path.split("/")[-1]
+
+        try:
+            # Check if the Word document exists
+            if not os.path.exists(docx_path):  # If the file does not exist, log an error
+                error_log.write(f"Word document not found: {docx_path}\n")
+                continue
+
+            # Load the Word document using the `docx` library
+            doc = docx.Document(docx_path)  # Open the Word document
+            # Combine all paragraphs in the document into a single text block
+            full_text = ''.join([para.text + '\n' for para in doc.paragraphs])
+            header = doc.paragraphs[0].text.strip()  # Assume the first paragraph is the header/title
+
+            # Split the full text into sections based on "Objections" patterns
+            sections = re.split(objection_pattern, full_text)
+            if len(sections) <= 1:  # If no sections are found, log an error
+                error_log.write(f"No objections found in file: {docx_path}\n")
+                continue
+
+            # Process each pair of objection and response sections
+            for i in range(1, len(sections), 2):
+                objection_header = sections[i].strip()  # Get the objection text
+                question_section = sections[i + 1].strip()  # Get the corresponding response text
+
+                # Find the response text within the question section
+                match = response_pattern.search(question_section)
+                if match:
+                    question_text = question_section[:match.start()].strip()  # Extract the question text
+                    answer_text = question_section[match.end():].strip()  # Extract the answer text
+
+                    # Extract objection and response numbers for tracking
+                    objection_number_match = re.search(r'\d+', objection_header)
+                    objection_number = objection_number_match.group() if objection_number_match else 'N/A'
+
+                    response_number_match = re.search(r'\d+', question_section[match.start():match.end()])
+                    response_number = response_number_match.group() if response_number_match else 'N/A'
+
+                    # Check if the objection and response numbers match
+                    match_status = objection_number == response_number
+
+                    # Append the extracted data to the output Excel file
+                    output_sheet.append([filename, header, question_text, answer_text, objection_number, response_number, match_status])
+
+            # Log successful processing of the file
+            success_log.write(f"Successfully processed: {docx_path}\n")
+
+        except Exception as e:
+            # If an error occurs, log the error and the file name
+            error_log.write(f"Error processing file {docx_path}: {str(e)}\n")
+
+    # Save the output Excel file with all the processed data
+    output_workbook.save(output_excel_file_path)
+    # Close the log files after writing
+    success_log.close()
+    error_log.close()
