@@ -1,0 +1,29 @@
+import pandas as pd
+from openpyxl import load_workbook
+
+# Input and output file names
+input_file = 'original.xlsx'
+output_file = 'updated_with_new_sheet.xlsx'
+
+# Load the original Excel file
+workbook = load_workbook(input_file)
+
+# Create a new writer for the new file
+with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+    # Copy all existing sheets to the new file
+    for sheet_name in workbook.sheetnames:
+        data = pd.read_excel(input_file, sheet_name=sheet_name)
+        data.to_excel(writer, index=False, sheet_name=sheet_name)
+
+    # Data manipulation (example)
+    manipulated_data = {'Name': ['David', 'Eve'], 'Age': [28, 33]}
+    df_new = pd.DataFrame(manipulated_data)
+
+    # Add manipulated data to a new sheet
+    new_sheet_name = 'NewDataSheet'
+    df_new.to_excel(writer, index=False, sheet_name=new_sheet_name)
+
+    # Save the new file
+    writer.save()
+
+print(f"New file '{output_file}' created with original sheets and a new sheet '{new_sheet_name}'.")
