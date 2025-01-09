@@ -1,0 +1,72 @@
+import pandas as pd
+import os
+from datetime import datetime
+
+def read_excel_file(file_path):
+    """
+    Reads an Excel file and returns a DataFrame.
+    
+    Args:
+    file_path (str): The path to the Excel file.
+
+    Returns:
+    pandas.DataFrame: A DataFrame containing the contents of the Excel file.
+    """
+    return pd.read_excel(file_path, sheet_name='Sheet1')
+
+def get_last_modified_time(file_path):
+    """
+    Gets the last modified time of a file.
+
+    Args:
+    file_path (str): The path to the file.
+
+    Returns:
+    str: The last modified time as a formatted string, or an error message.
+    """
+    try:
+        # Get the last modified timestamp and convert it to a human-readable format
+        mod_time = os.path.getmtime(file_path)
+        return datetime.fromtimestamp(mod_time).strftime('%Y-%m-%d %H:%M:%S')
+    except FileNotFoundError:
+        return 'File not found'
+    except Exception as e:
+        return f'Error: {str(e)}'
+
+def update_excel_file(df, excel_path):
+    """
+    Updates an Excel file with new data in Column B.
+
+    Args:
+    df (pandas.DataFrame): The DataFrame to save to the Excel file.
+    excel_path (str): The path to the Excel file to be updated.
+    """
+    # Save the DataFrame to the same Excel file
+    df.to_excel(excel_path, index=False)
+    print("Excel file has been updated with last modified times.")
+
+def main():
+    """
+    Main function to handle the workflow of reading an Excel file, updating it with
+    last modified times of files listed in Column A, and saving the updated DataFrame.
+    """
+    # Path to the Excel file
+    excel_path = 'path_to_your_excel_file.xlsx'
+
+    # Read the Excel file
+    df = read_excel_file(excel_path)
+
+    # Ensure there is a Column B to store the results
+    if 'B' not in df.columns:
+        df['B'] = None
+
+    # Update Column B with last modified times
+    for index, row in df.iterrows():
+        df.at[index, 'B'] = get_last_modified_time(row['A'])
+
+    # Save the updated DataFrame back to the Excel file
+    update_excel_file(df, excel_path)
+
+# Run the main function if the script is executed directly
+if __name__ == "__main__":
+    main()
