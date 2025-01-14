@@ -1,0 +1,32 @@
+import pandas as pd
+
+# Load your data
+df = pd.read_csv('your_file.csv')
+
+# Clean and standardize the data in columns D, E, F, G
+for col in ['D', 'E', 'F', 'G']:
+    df[col] = (
+        df[col]
+        .astype(str)           # Ensure all are strings
+        .str.strip()           # Remove leading/trailing spaces
+        .str.lower()           # Convert to lowercase for consistent comparison
+        .fillna('')            # Replace NaN with empty string
+    )
+
+# Combine columns D, E, F, G into a single string for comparison
+df['combined'] = df['D'] + '' + df['E'] + '' + df['F'] + '_' + df['G']
+
+# Check for duplicates based on the combined column
+df['is_duplicate'] = df.duplicated(subset=['combined'], keep=False)
+
+# Sort the data to group duplicates together
+df = df.sort_values(by=['is_duplicate', 'combined'], ascending=[False, True])
+
+# Drop the combined column if not needed
+df = df.drop(columns=['combined'])
+
+# Save the cleaned and sorted data to a new file
+df.to_csv('output_cleaned_sorted_duplicates.csv', index=False)
+
+# Print the cleaned and sorted DataFrame
+print(df)
