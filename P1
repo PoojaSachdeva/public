@@ -151,3 +151,103 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# ############# SUb folder immediately inside main folder
+import os
+import re
+import datetime
+import json
+import logging
+import pandas as pd
+from dateutil.parser import parse
+
+# Configure logging
+logging.basicConfig(filename='file_processing.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+
+def load_metadata(file_path):
+    """Load metadata from a JSON file."""
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+def save_metadata(file_path, metadata):
+    """Save updated metadata back to a JSON file."""
+    with open(file_path, 'w') as file:
+        json.dump(metadata, file, indent=4)
+
+def process_files_in_sent(directory, subfolders, start_date, end_date, metadata):
+    """Search for 'Sent' folders within specified subdirectories of 'Objection X' folders and process files."""
+    processed_files = []
+    file_data = []
+    objection_pattern = re.compile(r"Objection \d+$", re.IGNORECASE)  # Pattern to match 'Objection X'
+
+    # Limit the search to the specified subfolders
+    subfolders_set = set(subfolders)
+
+    for root, dirs, files in os.walk(directory, topdown=True):
+        dirs[:] = [d for d in dirs if d in subfolders_set]  # Filter dirs to include only specified subfolders
+        if objection_pattern.search(os.path.basename(root)):  # Match 'Objection X'
+            if "Sent" in dirs:  # Look for 'Sent' subdirectory
+                sent_path = os.path.join(root, "Sent")
+                for file in os.listdir(sent_path):
+                    full_path = os.path.join(sent_path, file)
+                    if file.endswith('.docx') and "objection x response" in file:
+                        file_info = process_file(full_path, start_date, end_date, metadata)
+                        if file_info:
+                            processed_files.append(full_path)
+                            file_data.append(file_info)
+                dirs[:] = []  # Prevent further descending into other subdirectories
+
+    return processed_files, file_data
+
+def process_file(full_path, start_date, end_date, metadata):
+    """Check criteria and extract file information."""
+    file_mod_time = os.path.getmtime(full_path)
+    file_mod_date = datetime.datetime.fromtimestamp(file_mod_time)
+    extracted_date = None
+
+    try:
+        extracted_date = parse(full_path[:10], yearfirst=True).date()
+    except ValueError:
+        pass
+
+    if (extracted_date and start_date.date() <= extracted_date <= end_date.date()) or (start_date <= file_mod_date <= end_date):
+        previously_processed = full_path in metadata
+        metadata[full_path] = {'mod_time': file_mod_time, 'processed': True}
+        return {
+            'File Path': full_path,
+            'File Name': os.path.basename(full_path),
+            'Last Modified': file_mod_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'Date Extracted from Filename': str(extracted_date) if extracted_date else 'N/A',
+            'Previously Processed': previously_processed
+        }
+    return None
+
+def export_to_excel(file_data, output_filename='Processed_Files.xlsx'):
+    """Export the data to Excel for review."""
+    df = pd.DataFrame(file_data)
+    df.to_excel(output_filename, index=False)
+    logging.info("Data exported to Excel: {}".format(output_filename))
+
+def main():
+    directory = '/path/to/your/directory'
+    subfolders = ['Objection 1', 'Objection 2', 'Objection 3']  # Example subfolders
+    start_date = datetime.datetime(2024, 6, 1)
+    end_date = datetime.datetime(2024, 6, 30)
+    metadata_file = 'file_metadata.json'
+    metadata = load_metadata(metadata_file)
+
+    processed_files, file_data = process_files_in_sent(directory, subfolders, start_date, end_date, metadata)
+    save_metadata(metadata_file, metadata)
+
+    if file_data:
+        export_to_excel(file_data)
+    logging.info(f"Processed {len(processed_files)} files. Data is available in the Excel file.")
+
+if __name__ == "__main__":
+    main()
+
