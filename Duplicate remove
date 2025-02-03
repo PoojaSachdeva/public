@@ -30,3 +30,58 @@ df.to_csv('output_cleaned_sorted_duplicates.csv', index=False)
 
 # Print the cleaned and sorted DataFrame
 print(df)
+
+
+
+import pandas as pd
+
+# 1) Read data from CSV
+df = pd.read_csv('your_file.csv')
+
+# 2) Clean and standardize columns D, E, F, G
+for col in ['D', 'E', 'F', 'G']:
+    df[col] = (
+        df[col]
+        .astype(str)       # Convert column values to strings (avoid numeric vs. text issues)
+        .str.strip()       # Remove leading/trailing spaces
+        .str.lower()       # Convert everything to lowercase
+    )
+
+# 3) Create a combined key from columns D, E, F, G
+df['combined'] = (
+    df['D'] + '_' +  # An underscore to separate each field
+    df['E'] + '_' +
+    df['F'] + '_' +
+    df['G']
+)
+
+# 4) Prepare to identify duplicates
+first_occurrence_dict = {}  # Will map a 'combined' value to the row index of its first occurrence
+is_dup_list = []            # Will store True/False for each row indicating if it's a duplicate
+dup_of_list = []            # Will store the row index of the first occurrence for each duplicate
+
+# 5) Loop through each row to mark duplicates
+for i, combo in enumerate(df['combined']):
+    if combo not in first_occurrence_dict:
+        # This is the first time we see this 'combined' value
+        first_occurrence_dict[combo] = i  # Record this row index as the first occurrence
+        is_dup_list.append(False)         # Not a duplicate
+        dup_of_list.append(None)          # No "original row" reference
+    else:
+        # We've already seen this 'combined' value before
+        is_dup_list.append(True)                       # It's a duplicate
+        dup_of_list.append(first_occurrence_dict[combo])  # Point to the index of the first occurrence
+
+# 6) Add duplicate info back into the DataFrame
+df['is_duplicate'] = is_dup_list
+df['duplicate_of'] = dup_of_list
+
+# OPTIONAL: Convert the 0-based index to a 1-based row reference (e.g., for display)
+df['duplicate_of'] = df['duplicate_of'].apply(lambda x: x + 2 if pd.notnull(x) else None)
+# Explanation: 
+#    +1 to convert from 0-based Python index to 1-based row numbering
+#    +1 more if your CSV’s first data row is actually row #2 in Excel
+
+# 7) Output the result
+df.to_csv('output_with_duplicates_flagged.csv', index=False)
+print(df)
